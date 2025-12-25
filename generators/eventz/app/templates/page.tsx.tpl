@@ -3,14 +3,14 @@
  * Licensed under the MIT License.
  */
 
-<%= commandImports %>
+<%- commandImports %>
 
-export default function <%= sliceName %>Page() {
+export default function <%- sliceName %>Page() {
     return (
         <div className="slice-page">
-            <h2><%= sliceTitle %></h2>
+            <h2><%- sliceTitle %></h2>
             <div className="commands">
-                <%= commandUIs %>
+                <%- commandUIs %>
             </div>
         </div>
     );

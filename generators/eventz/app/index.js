@@ -82,7 +82,7 @@ module.exports = class extends Generator {
                 type: 'confirm',
                 name: 'setupSupabase',
                 message: 'Do you want to set up Supabase for event persistence?',
-                default: true
+                default: false
             }
         ]);
         this.log('Eventz Generator: Prompting phase finished.');
@@ -266,11 +266,14 @@ module.exports = class extends Generator {
                 const commandType = commandTitle(command);
                 const commandSlug = slugify(command.title).toLowerCase();
                 const requiredFields = command.fields || [];
-                const nonGeneratedFields = requiredFields.filter(f => !(f.generated && f.type.toLowerCase() === 'uuid'));
+                
+                const nonGeneratedFields = requiredFields.filter(
+                    f => !(f.generated && f.type.toLowerCase() === 'uuid')
+                    );
 
                 const formFields = nonGeneratedFields.map(f => {
                     const fieldType = f.type.toLowerCase() === 'string' ? 'text' : f.type.toLowerCase();
-                    return `<div>
+                    return `                <div>
                         <label htmlFor="${f.name}">${f.name}:</label>
                         <input
                             type="${fieldType}"
@@ -281,22 +284,27 @@ module.exports = class extends Generator {
                             required
                         />
                     </div>`;
-                }).join('\n                ');
+                }).join('\n');
 
-                const commandPayload = nonGeneratedFields.map(f => `${f.name}: string`).join('; ');
-                const commandPayloadDefaults = nonGeneratedFields.map(f => `${f.name}: ''`).join(', ');
+               const commandPayload = nonGeneratedFields
+                .map(f => `${f.name}: ${tsType(f)}`)
+                .join('; '); 
+               
+                const commandPayloadDefaults = nonGeneratedFields.length
+                    ? `{ ${nonGeneratedFields.map(f => `${f.name}: ''`).join(', ')} }`
+                    : '{}';
 
                 this.fs.copyTpl(
-                    this.templatePath('commandUI.tsx.tpl'),
-                    this.destinationPath(`app/src/components/${commandType}UI.tsx`),
-                    {
-                        commandType,
-                        commandSlug,
-                        commandTitle: command.title,
-                        commandPayload: commandPayload || 'any',
-                        commandPayloadDefaults: commandPayloadDefaults || '',
-                        formFields
-                    }
+                this.templatePath('commandUI.tsx.tpl'),
+                this.destinationPath(`app/src/components/${commandType}UI.tsx`),
+                {
+                    commandType,
+                    commandSlug,
+                    commandTitle: command.title,
+                    commandPayload: commandPayload || 'any',
+                    commandPayloadDefaults: commandPayloadDefaults || '',
+                    formFields
+                }
                 );
             });
 
@@ -308,7 +316,7 @@ module.exports = class extends Generator {
 
             const commandImports = (slice.commands || []).map(command => {
                 const commandType = commandTitle(command);
-                return `import { ${commandType}UI } from '../components/${commandType}UI';`;
+                return `import { ${commandType}UI } from '../app/src/components/${commandType}UI';`;
             }).join('\n');
 
             this.fs.copyTpl(
