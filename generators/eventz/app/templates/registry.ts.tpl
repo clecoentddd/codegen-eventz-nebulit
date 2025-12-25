@@ -8,7 +8,7 @@ import { messageBus } from './common/infrastructure/messageBus';
 <% if (setupSupabase) { %>
 import { SupabaseEventStore } from './infrastructure/persistence/SupabaseEventStore';
 <% } %>
-<%= commandHandlerImports %>
+<%- commandHandlerImports %>
 
 export function initialize() {
     let eventStore: EventStore;
@@ -39,5 +39,5 @@ export function initialize() {
     <% } %>
 
     // Register all command handlers
-<%= commandHandlerRegistrations %>
+<%- commandHandlerRegistrations %>
 }

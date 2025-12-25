@@ -1,4 +1,4 @@
-/*
+can cany/*
  * Copyright (c) 2025 Nebulit GmbH
  * Licensed under the MIT License.
  */
@@ -27,8 +27,8 @@ module.exports = class extends Generator {
     constructor(args, opts) {
         super(args, opts);
         this.givenAnswers = opts.answers
-        config = require(this.env.cwd + "/config.json");
-
+        config = opts.config;
+        this.destinationRoot(slugify(this.givenAnswers.appName));
     }
 
 
@@ -91,7 +91,7 @@ module.exports = class extends Generator {
                 var idAttribute = this._idAttribute(command)
                 return `{
                     "command":"${_commandTitle(command.title)}",
-                    "endpoint": ${command.apiEndpoint ? `"${command.apiEndpoint}/${idAttribute}"` : `"/${_sliceTitle(commandSlice.title)}/{${idAttribute}}"`},
+                    "endpoint": ${command.apiEndpoint ? `"${command.apiEndpoint}/${idAttribute}"` : `"/app/components/slices/${_sliceTitle(commandSlice.title)}/{${idAttribute}}"`},
                     "schema": ${_commandTitle(command.title) + "Schema"}
                 }`
             }).join(",")}]`
@@ -121,7 +121,7 @@ module.exports = class extends Generator {
             ${commands?.map(command => `
             ## start command
             Title: ${command.title}
-            POST Endpoint: http://localhost:8080/${command.apiEndpoint ? `"${command.apiEndpoint}/${this._idAttribute(command)}"` : `"/${_sliceTitle(command.slice)}/{${this._idAttribute(command)}}"`}
+            POST Endpoint: http://localhost:8080/${command.apiEndpoint ? `"${command.apiEndpoint}/${this._idAttribute(command)}"` : `"/app/components/slices/${_sliceTitle(command.slice)}/{${this._idAttribute(command)}}"`}
             Schema: ${JSON.stringify(parseSchema(command))}
             ## end command
             `
@@ -137,13 +137,13 @@ module.exports = class extends Generator {
 
                 // Write to destination
                 this.fs.write(
-                    `${slugify(this.givenAnswers?.appName)}/app/components/slices/${_sliceTitle(slice.title)}/${screenImage.title}-${screenImage.id}.png`, buffer
+                    `app/components/slices/${_sliceTitle(slice.title)}/${screenImage.title}-${screenImage.id}.png`, buffer
                 );
             }
 
             this.fs.copyTpl(
                 this.templatePath('page.tsx.tpl'),
-                this.destinationPath(`${slugify(this.givenAnswers?.appName)}/app/components/slices/${_sliceTitle(slice.title)}/${title}.tsx`),
+                this.destinationPath(`app/components/slices/${_sliceTitle(slice.title)}/${title}.tsx`),
                 {
                     _name: title,
                     _pageName: capitalizeFirstCharacter(title),
@@ -186,7 +186,7 @@ module.exports = class extends Generator {
     _writeCommandSchema(slice, command) {
         this.fs.copyTpl(
             this.templatePath(`schema.json.tpl`),
-            this.destinationPath(`${slugify(this.givenAnswers?.appName)}/app/components/slices/${_sliceTitle(slice.title)}/${_commandTitle(command?.title)}.json`),
+            this.destinationPath(`app/components/slices/${_sliceTitle(slice.title)}/${_commandTitle(command?.title)}.json`),
             {
                 _schema: JSON.stringify(parseSchema(command), null, 2)
             }
@@ -198,7 +198,7 @@ module.exports = class extends Generator {
 
         this.fs.copyTpl(
             this.templatePath(`command.ts.tpl`),
-            this.destinationPath(`${slugify(this.givenAnswers?.appName)}/app/components/slices/${_sliceTitle(slice.title)}/${_commandTitle(command?.title)}.ts`),
+            this.destinationPath(`app/components/slices/${_sliceTitle(slice.title)}/${_commandTitle(command?.title)}.ts`),
             {
                 _commandName: _commandTitle(command.title),
                 _commandFields: variables([command]),
@@ -211,7 +211,7 @@ module.exports = class extends Generator {
     _writeReadModel(slice, readModel) {
         this.fs.copyTpl(
             this.templatePath(`readmodel.ts.tpl`),
-            this.destinationPath(`${slugify(this.givenAnswers?.appName)}/app/components/slices/${_sliceTitle(slice.title)}/${_readmodelTitle(readModel?.title)}.tsx`),
+            this.destinationPath(`app/components/slices/${_sliceTitle(slice.title)}/${_readmodelTitle(readModel?.title)}.tsx`),
             {
                 _readModelName: _readmodelTitle(readModel.title),
                 _endpoint: this._readModelEndpoint(slice.title, readModel)
