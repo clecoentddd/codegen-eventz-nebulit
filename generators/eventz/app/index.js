@@ -96,6 +96,7 @@ module.exports = class extends Generator {
         this._writingCommands();
         this._writeRegistry();
         this._writeNextApiRoutes();
+        this._writeUIComponents();
         if (this.answers.setupSupabase) {
             this._writeSupabaseSetup();
         }
@@ -139,6 +140,9 @@ module.exports = class extends Generator {
         this.fs.copy(this.templatePath('EventStore.ts.tpl'), this.destinationPath(`${domainDir}/EventStore.ts`));
         const infraDir = 'app/src/common/infrastructure';
         this.fs.copy(this.templatePath('messageBus.ts.tpl'), this.destinationPath(`${infraDir}/messageBus.ts`));
+
+        // Create components directory
+        this.fs.write(this.destinationPath('app/src/components/.gitkeep'), '');
     }
 
     _writingEvents() {
@@ -227,7 +231,13 @@ module.exports = class extends Generator {
                 const commandPath = `../../app/src/slices/${sliceName}/${commandType}Command`;
                 const httpMethod = this._getHttpMethodForCommand(command.title);
                 const requiredFields = command.fields || [];
-                const commandPayload = requiredFields.map(f => `${f.name}: req.body.${f.name}`).join(',\n                    ');
+                const commandPayload = requiredFields.map(f => {
+                    if (f.generated && f.type.toLowerCase() === 'uuid') {
+                        return `${f.name}: randomUUID()`;
+                    } else {
+                        return `${f.name}: req.body.${f.name}`;
+                    }
+                }).join(',\n                    ');
 
                 this.fs.copyTpl(
                     this.templatePath('next-api-route.ts.tpl'),
@@ -241,6 +251,91 @@ module.exports = class extends Generator {
                 );
             });
         });
+    }
+
+    _writeUIComponents() {
+        this.log('---> _writeUIComponents: Generating UI components for state change...');
+        const slices = this.globalConfig.slices || [];
+
+        slices.forEach(slice => {
+            const sliceName = pascalCase(slice.title);
+            const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
+
+            // Generate command UI components
+            (slice.commands || []).forEach(command => {
+                const commandType = commandTitle(command);
+                const commandSlug = slugify(command.title).toLowerCase();
+                const requiredFields = command.fields || [];
+                const nonGeneratedFields = requiredFields.filter(f => !(f.generated && f.type.toLowerCase() === 'uuid'));
+
+                const formFields = nonGeneratedFields.map(f => {
+                    const fieldType = f.type.toLowerCase() === 'string' ? 'text' : f.type.toLowerCase();
+                    return `<div>
+                        <label htmlFor="${f.name}">${f.name}:</label>
+                        <input
+                            type="${fieldType}"
+                            id="${f.name}"
+                            name="${f.name}"
+                            value={formData.${f.name}}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>`;
+                }).join('\n                ');
+
+                const commandPayload = nonGeneratedFields.map(f => `${f.name}: string`).join('; ');
+                const commandPayloadDefaults = nonGeneratedFields.map(f => `${f.name}: ''`).join(', ');
+
+                this.fs.copyTpl(
+                    this.templatePath('commandUI.tsx.tpl'),
+                    this.destinationPath(`app/src/components/${commandType}UI.tsx`),
+                    {
+                        commandType,
+                        commandSlug,
+                        commandTitle: command.title,
+                        commandPayload: commandPayload || 'any',
+                        commandPayloadDefaults: commandPayloadDefaults || '',
+                        formFields
+                    }
+                );
+            });
+
+            // Generate slice page
+            const commandUIs = (slice.commands || []).map(command => {
+                const commandType = commandTitle(command);
+                return `<${commandType}UI />`;
+            }).join('\n            ');
+
+            const commandImports = (slice.commands || []).map(command => {
+                const commandType = commandTitle(command);
+                return `import { ${commandType}UI } from '../components/${commandType}UI';`;
+            }).join('\n');
+
+            this.fs.copyTpl(
+                this.templatePath('page.tsx.tpl'),
+                this.destinationPath(`pages/${sliceSlug}.tsx`),
+                {
+                    sliceName,
+                    sliceTitle: slice.title,
+                    commandUIs,
+                    commandImports
+                }
+            );
+        });
+
+        // Update index page with slice links
+        const sliceLinks = slices.map(slice => {
+            const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
+            return `<Link href="/${sliceSlug}"><a>${slice.title}</a></Link>`;
+        }).join('\n                    ');
+
+        this.fs.copyTpl(
+            this.templatePath('index.tsx.tpl'),
+            this.destinationPath('pages/index.tsx'),
+            {
+                sliceLinks
+            }
+        );
     }
 
     _writeSupabaseSetup() {

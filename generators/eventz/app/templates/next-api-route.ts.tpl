@@ -3,6 +3,7 @@
  * Licensed under the MIT License.
  */
 
+import { randomUUID } from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { messageBus } from '../../app/src/common/infrastructure/messageBus';
 import { <%= commandType %>Command } from '<%= commandPath %>';

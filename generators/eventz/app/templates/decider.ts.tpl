@@ -4,7 +4,7 @@
  */
 
 import { <%= commandType %>Command } from './<%= commandType %>Command';
-<%= eventImports %>
+<%- eventImports %>
 
 export type <%= commandType %>Events = <%= eventUnion %>;
 
