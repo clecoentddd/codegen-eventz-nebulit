@@ -1,0 +1,155 @@
+{
+  "id": "3458764653655010688",
+  "status": "Created",
+  "index": 1,
+  "title": "slice: Customercreate",
+  "context": "EventzCodeGen",
+  "sliceType": "STATE_CHANGE",
+  "commands": [
+    {
+      "id": "3458764653655010592",
+      "tags": [],
+      "elementContext": "INTERNAL",
+      "modelContext": "EventzCodeGen",
+      "context": "INTERNAL",
+      "slice": "slice: Customercreate",
+      "title": "Customercreate",
+      "fields": [
+        {
+          "name": "customerId",
+          "idAttribute": true,
+          "type": "UUID",
+          "cardinality": "Single",
+          "subfields": [],
+          "generated": true
+        },
+        {
+          "name": "customerName",
+          "generated": true,
+          "idAttribute": true,
+          "type": "String",
+          "cardinality": "Single",
+          "subfields": []
+        }
+      ],
+      "type": "COMMAND",
+      "description": "",
+      "aggregate": "default",
+      "aggregateDependencies": [],
+      "dependencies": [
+        {
+          "id": "3458764653655010215",
+          "type": "OUTBOUND",
+          "title": "CustomerCreated",
+          "elementType": "EVENT"
+        },
+        {
+          "id": "3458764653655010607",
+          "type": "INBOUND",
+          "title": "screen Customer Creation",
+          "elementType": "SCREEN"
+        }
+      ],
+      "createsAggregate": false,
+      "triggers": [],
+      "sketched": false,
+      "prototype": {
+        "activeByDefault": false
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "3458764653655010215",
+      "tags": [],
+      "elementContext": "INTERNAL",
+      "modelContext": "EventzCodeGen",
+      "context": "INTERNAL",
+      "slice": "slice: Customercreate",
+      "title": "CustomerCreated",
+      "fields": [
+        {
+          "name": "customerId",
+          "idAttribute": true,
+          "type": "UUID",
+          "cardinality": "Single",
+          "subfields": []
+        },
+        {
+          "name": "customerName",
+          "generated": true,
+          "idAttribute": true,
+          "type": "String",
+          "cardinality": "Single",
+          "subfields": []
+        }
+      ],
+      "type": "EVENT",
+      "description": "",
+      "aggregate": "default",
+      "aggregateDependencies": [],
+      "dependencies": [
+        {
+          "id": "3458764653655010592",
+          "type": "INBOUND",
+          "title": "Customercreate",
+          "elementType": "COMMAND"
+        }
+      ],
+      "createsAggregate": false,
+      "triggers": [],
+      "sketched": false,
+      "prototype": {
+        "activeByDefault": false
+      }
+    }
+  ],
+  "readmodels": [],
+  "screens": [
+    {
+      "id": "3458764653655010607",
+      "tags": [],
+      "groupId": "3458764653655010624",
+      "elementContext": "INTERNAL",
+      "modelContext": "EventzCodeGen",
+      "context": "INTERNAL",
+      "slice": "slice: Customercreate",
+      "title": "screen Customer Creation",
+      "fields": [
+        {
+          "name": "customerName",
+          "generated": true,
+          "idAttribute": true,
+          "type": "String",
+          "cardinality": "Single",
+          "subfields": []
+        }
+      ],
+      "type": "SCREEN",
+      "description": "",
+      "aggregate": "default",
+      "aggregateDependencies": [],
+      "dependencies": [
+        {
+          "id": "3458764653655010592",
+          "type": "OUTBOUND",
+          "title": "Customercreate",
+          "elementType": "COMMAND"
+        }
+      ],
+      "createsAggregate": false,
+      "triggers": [],
+      "sketched": false,
+      "prototype": {
+        "activeByDefault": false
+      }
+    }
+  ],
+  "screenImages": [],
+  "screenLayouts": [],
+  "processors": [],
+  "tables": [],
+  "specifications": [],
+  "actors": [],
+  "aggregates": []
+}
