@@ -92,6 +92,20 @@ export class SupabaseEventStore implements EventStore {
         }
     }
 
+    async getAllEvents(): Promise<Event[]> {
+        const { data, error } = await this.supabase
+            .from('events')
+            .select('*')
+            .order('version', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching all events from Supabase:', error);
+            throw new Error(`Supabase getAllEvents failed: ${error.message}`);
+        }
+
+        return (data || []).map(this.toEvent);
+    }
+
     private toEvent(record: any): Event {
         return {
             streamId: record.stream_id,

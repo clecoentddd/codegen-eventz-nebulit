@@ -63,7 +63,13 @@ module.exports = class extends Generator {
         super(args, opts);
         this.log('Eventz Generator: Constructor starting...');
         try {
-            this.globalConfig = require(this.env.cwd + '/config.json');
+            const config = require(this.env.cwd + '/config.json');
+            // Handle both formats: config as object with slices, or config as slices array
+            if (Array.isArray(config)) {
+                this.globalConfig = { slices: config };
+            } else {
+                this.globalConfig = config;
+            }
         } catch (e) {
             this.env.error('FATAL ERROR: config.json not found or is invalid.');
         }
@@ -76,7 +82,7 @@ module.exports = class extends Generator {
                 type: 'input',
                 name: 'appName',
                 message: 'What is the name of your project?',
-                default: this.globalConfig?.codeGen?.application || 'my-app'
+                default: 'my-app'
             },
             {
                 type: 'confirm',
@@ -97,6 +103,8 @@ module.exports = class extends Generator {
         this._writeRegistry();
         this._writeNextApiRoutes();
         this._writeUIComponents();
+        this._writeProjections();
+        this._writeReadmodelAPIs();
         if (this.answers.setupSupabase) {
             this._writeSupabaseSetup();
         }
@@ -165,9 +173,12 @@ module.exports = class extends Generator {
         if (slices.length === 0) return;
 
         slices.forEach((slice) => {
+            const sliceName = pascalCase(slice.title);
+            const sliceDir = `app/src/slices/${sliceName}`;
+            this.fs.write(this.destinationPath(`${sliceDir}/.gitkeep`), '');
+
             (slice.commands || []).forEach((command) => {
                 const commandType = commandTitle(command);
-                const destinationDir = `app/src/slices/${pascalCase(slice.title)}`;
                 const resultingEvents = (command.dependencies || [])
                     .filter(dep => dep.type === 'OUTBOUND' && dep.elementType === 'EVENT')
                     .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
@@ -179,9 +190,9 @@ module.exports = class extends Generator {
                 const eventUnion = resultingEvents.map(event => eventTitle(event)).join(' | ') || 'never';
                 const renderedEvents = resultingEvents.map(event => renderEventAssignment(event)).join(',\n');
 
-                this.fs.copyTpl(this.templatePath('specific-command.ts.tpl'), this.destinationPath(`${destinationDir}/${commandType}Command.ts`), { commandPayload: renderCommandPayload(command), commandType: commandType });
-                this.fs.copyTpl(this.templatePath('decider.ts.tpl'), this.destinationPath(`${destinationDir}/${commandType}Decider.ts`), { commandType, eventImports, eventUnion, resultingEvents: renderedEvents });
-                this.fs.copyTpl(this.templatePath('command-handler.ts.tpl'), this.destinationPath(`${destinationDir}/${commandType}CommandHandler.ts`), { commandType });
+                this.fs.copyTpl(this.templatePath('specific-command.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Command.ts`), { commandPayload: renderCommandPayload(command), commandType: commandType });
+                this.fs.copyTpl(this.templatePath('decider.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Decider.ts`), { commandType, eventImports, eventUnion, resultingEvents: renderedEvents });
+                this.fs.copyTpl(this.templatePath('command-handler.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}CommandHandler.ts`), { commandType });
             });
         });
     }
@@ -198,7 +209,7 @@ module.exports = class extends Generator {
                 const sliceName = pascalCase(slice.title);
                 const handlerCreator = `create${commandType}CommandHandler`;
                 const handlerPath = `./slices/${sliceName}/${commandType}CommandHandler`;
-                
+
                 commandHandlerImports.push(`import { ${handlerCreator} } from '${handlerPath}';`);
                 const registration = `    messageBus.subscribe('${commandType}', ${handlerCreator}(eventStore));`;
                 commandHandlerRegistrations.push(registration);
@@ -261,12 +272,15 @@ module.exports = class extends Generator {
             const sliceName = pascalCase(slice.title);
             const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
 
+            // Create ui directory for the slice
+            this.fs.write(this.destinationPath(`app/src/slices/${sliceName}/ui/.gitkeep`), '');
+
             // Generate command UI components
             (slice.commands || []).forEach(command => {
                 const commandType = commandTitle(command);
                 const commandSlug = slugify(command.title).toLowerCase();
                 const requiredFields = command.fields || [];
-                
+
                 const nonGeneratedFields = requiredFields.filter(
                     f => !(f.generated && f.type.toLowerCase() === 'uuid')
                     );
@@ -288,15 +302,15 @@ module.exports = class extends Generator {
 
                const commandPayload = nonGeneratedFields
                 .map(f => `${f.name}: ${tsType(f)}`)
-                .join('; '); 
-               
+                .join('; ');
+
                 const commandPayloadDefaults = nonGeneratedFields.length
                     ? `{ ${nonGeneratedFields.map(f => `${f.name}: ''`).join(', ')} }`
                     : '{}';
 
                 this.fs.copyTpl(
                 this.templatePath('commandUI.tsx.tpl'),
-                this.destinationPath(`app/src/components/${commandType}UI.tsx`),
+                this.destinationPath(`app/src/slices/${sliceName}/ui/${commandType}UI.tsx`),
                 {
                     commandType,
                     commandSlug,
@@ -308,27 +322,60 @@ module.exports = class extends Generator {
                 );
             });
 
-            // Generate slice page
-            const commandUIs = (slice.commands || []).map(command => {
-                const commandType = commandTitle(command);
-                return `<${commandType}UI />`;
-            }).join('\n            ');
+            // Generate screen components for STATE_VIEW slices
+            let screenUIs = '';
+            let screenImports = '';
+            if (slice.sliceType === 'STATE_VIEW') {
+                (slice.screens || []).forEach(screen => {
+                    const screenSlug = slugify(screen.title).toLowerCase();
+                    const readmodelDeps = (screen.dependencies || [])
+                        .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL')
+                        .map(dep => (this.globalConfig.slices || []).flatMap(s => s.readmodels).find(rm => rm.id === dep.id))
+                        .filter(Boolean);
 
-            const commandImports = (slice.commands || []).map(command => {
-                const commandType = commandTitle(command);
-                return `import { ${commandType}UI } from '../app/src/components/${commandType}UI';`;
-            }).join('\n');
+                    if (readmodelDeps.length > 0) {
+                        const readmodel = readmodelDeps[0]; // Assume one readmodel per screen
+                        const apiSlug = slugify(readmodel.title).toLowerCase();
+                        const screenName = pascalCase(screen.title);
 
-            this.fs.copyTpl(
-                this.templatePath('page.tsx.tpl'),
-                this.destinationPath(`pages/${sliceSlug}.tsx`),
-                {
-                    sliceName,
-                    sliceTitle: slice.title,
-                    commandUIs,
-                    commandImports
-                }
-            );
+                        this.fs.copyTpl(this.templatePath('screen.tsx.tpl'), this.destinationPath(`app/src/slices/${sliceName}/ui/${screenName}.tsx`), {
+                            screenName,
+                            screenTitle: screen.title,
+                            apiSlug
+                        });
+
+                        screenUIs += `<${screenName} />\n            `;
+                        screenImports += `import ${screenName} from '../app/src/slices/${sliceName}/ui/${screenName}';\n`;
+                    }
+                });
+            }
+
+            // Generate slice page only if there are commands or screens
+            if ((slice.commands || []).length > 0 || screenUIs) {
+                const commandUIs = (slice.commands || []).map(command => {
+                    const commandType = commandTitle(command);
+                    return `<${commandType}UI />`;
+                }).join('\n            ');
+
+                const commandImports = (slice.commands || []).map(command => {
+                    const commandType = commandTitle(command);
+                    return `import { ${commandType}UI } from '../app/src/slices/${sliceName}/ui/${commandType}UI';`;
+                }).join('\n');
+
+                const allUIs = [commandUIs, screenUIs].filter(Boolean).join('\n            ');
+                const allImports = [commandImports, screenImports].filter(Boolean).join('\n');
+
+                this.fs.copyTpl(
+                    this.templatePath('page.tsx.tpl'),
+                    this.destinationPath(`pages/${sliceSlug}.tsx`),
+                    {
+                        sliceName,
+                        sliceTitle: slice.title,
+                        commandUIs: allUIs,
+                        commandImports: allImports
+                    }
+                );
+            }
         });
 
         // Update index page with slice links
@@ -344,6 +391,116 @@ module.exports = class extends Generator {
                 sliceLinks
             }
         );
+    }
+
+    _writeProjections() {
+        this.log('---> _writeProjections: Generating projection files for readmodels...');
+        const slices = this.globalConfig.slices || [];
+        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+            const sliceName = pascalCase(slice.title);
+            const sliceDir = `app/src/slices/${sliceName}`;
+            this.fs.write(this.destinationPath(`${sliceDir}/.gitkeep`), '');
+
+            (slice.readmodels || []).forEach(readmodel => {
+                const readmodelName = pascalCase(readmodel.title);
+                const projectionName = `projection${readmodelName}`;
+                const fileName = `${projectionName}.ts`;
+                const destinationPath = `${sliceDir}/${fileName}`;
+                const fields = readmodel.fields || [];
+                const fieldStrings = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
+
+                // Find inbound events
+                const inboundEvents = (readmodel.dependencies || [])
+                    .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'EVENT')
+                    .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
+                    .filter(Boolean);
+
+                const eventImports = inboundEvents.map(event => {
+                    const title = eventTitle(event);
+                    return `import { ${title}, ${title}EventName } from '../../events/${title}';`;
+                }).join('\n');
+
+                const eventsList = inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
+
+                // Simple evolve function for live projection
+                const evolveCases = inboundEvents.map(event => {
+                    const eventType = eventTitle(event); // e.g., CustomerCreated
+                    const eventFields = event.fields || [];
+
+                    const assignments = eventFields
+                        .map(field => `        ${field.name}: (event.data as any).${field.name},`)
+                        .join('\n');
+
+                    return `if (event.type === ${eventType}EventName) {\n    return {\n${assignments}\n    };\n}`;
+                }).join('\n');
+
+
+                this.fs.copyTpl(this.templatePath('readmodel.ts.tpl'), this.destinationPath(destinationPath), {
+                    readmodelName,
+                    fieldStrings,
+                    eventImports,
+                    eventsList,
+                    evolveCases
+                });
+            });
+        });
+    }
+
+    _writeReadmodelAPIs() {
+        this.log('---> _writeReadmodelAPIs: Generating Next.js API routes for readmodels...');
+        const slices = this.globalConfig.slices || [];
+        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+            const sliceName = pascalCase(slice.title);
+            (slice.readmodels || []).forEach(readmodel => {
+                const readmodelName = pascalCase(readmodel.title);
+                const projectionName = `projection${readmodelName}`;
+                const apiSlug = slugify(readmodel.title).toLowerCase();
+                const apiContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { NextApiRequest, NextApiResponse } from 'next';\nimport { get${readmodelName}Projection } from '../../app/src/slices/${sliceName}/${projectionName}';\n\nexport default async function handler(req: NextApiRequest, res: NextApiResponse) {\n    if (req.method !== 'GET') {\n        return res.status(405).json({ message: 'Method not allowed' });\n    }\n    try {\n        const data = await get${readmodelName}Projection();\n        return res.status(200).json(data);\n    } catch (error) {\n        console.error(error);\n        return res.status(500).json({ message: 'Internal server error' });\n    }\n}`;
+
+                this.fs.write(this.destinationPath(`pages/api/${apiSlug}.ts`), apiContent);
+            });
+        });
+    }
+
+    _writeScreenPages() {
+        this.log('---> _writeScreenPages: Generating pages for screens...');
+        const slices = this.globalConfig.slices || [];
+        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+            (slice.screens || []).forEach(screen => {
+                const screenSlug = slugify(screen.title).toLowerCase();
+                const readmodelDeps = (screen.dependencies || [])
+                    .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL')
+                    .map(dep => (this.globalConfig.slices || []).flatMap(s => s.readmodels).find(rm => rm.id === dep.id))
+                    .filter(Boolean);
+
+                if (readmodelDeps.length > 0) {
+                    const readmodel = readmodelDeps[0]; // Assume one readmodel per screen
+                    const apiSlug = slugify(readmodel.title).toLowerCase();
+                    const screenName = pascalCase(screen.title);
+
+                    this.fs.copyTpl(this.templatePath('screen.tsx.tpl'), this.destinationPath(`pages/${screenSlug}.tsx`), {
+                        screenName,
+                        screenTitle: screen.title,
+                        apiSlug
+                    });
+                }
+            });
+        });
+
+        // Update index page with screen links
+        const screenLinks = slices.filter(slice => slice.sliceType === 'STATE_VIEW').flatMap(slice =>
+            (slice.screens || []).map(screen => {
+                const screenSlug = slugify(screen.title).toLowerCase();
+                return `<Link href="/${screenSlug}"><a>${screen.title}</a></Link>`;
+            })
+        ).join('\n                    ');
+
+        const currentIndexContent = this.fs.read(this.destinationPath('pages/index.tsx'));
+        const updatedIndexContent = currentIndexContent.replace(
+            /(<Link href="\/[^"]+"><a>[^<]+<\/a><\/Link>\n                    )+/g,
+            `$&${screenLinks}\n                    `
+        );
+        this.fs.write(this.destinationPath('pages/index.tsx'), updatedIndexContent);
     }
 
     _writeSupabaseSetup() {
