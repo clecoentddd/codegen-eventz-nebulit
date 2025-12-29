@@ -4,11 +4,14 @@
  */
 
 import { EventStore } from './common/domain/EventStore';
-import { messageBus } from './common/infrastructure/messageBus';
+import { rabbitMQMock } from './common/infrastructure/RabbitMQMock';
+import { signalMock } from './common/infrastructure/SignalMock';
 <% if (setupSupabase) { %>
 import { SupabaseEventStore } from './infrastructure/persistence/SupabaseEventStore';
 <% } %>
 <%- commandHandlerImports %>
+
+let eventStoreInstance: EventStore;
 
 export function initialize() {
     let eventStore: EventStore;
@@ -34,10 +37,26 @@ export function initialize() {
                 memoryStore[streamId] = [];
             }
             memoryStore[streamId].push(...events);
+            // Emit signals when events are appended
+            events.forEach(event => {
+                signalMock.emit(event.type, event);
+            });
         }
     };
     <% } %>
 
-    // Register all command handlers
+    eventStoreInstance = eventStore;
+
+    // Initialize RabbitMQ and Signal mocks
+    console.log('[Registry] Initializing RabbitMQ command processors...');
+
+    // Initialize all command processors with RabbitMQ subscriptions
 <%- commandHandlerRegistrations %>
+}
+
+export function getEventStore(): EventStore {
+    if (!eventStoreInstance) {
+        throw new Error('Event store not initialized. Call initialize() first.');
+    }
+    return eventStoreInstance;
 }

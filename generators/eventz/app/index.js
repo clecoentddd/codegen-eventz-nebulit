@@ -1,3 +1,4 @@
+// @ts-nocheck
 /*
  * Copyright (c) 2025 Nebulit GmbH
  * Licensed under the MIT License.
@@ -52,7 +53,29 @@ function renderCommandPayload(command) {
 function renderEventAssignment(event) {
     const eventFields = event.fields || [];
     const typeName = eventTitle(event);
-    return `{\n        streamId: command.streamId,\n        type: ${typeName}EventName,\n        data: {\n            ${eventFields.map(field => `${field.name}: command.data.${field.name}`).join(',\n            ')}\n        },\n        metadata: {\n            correlation_id: command.metadata?.correlation_id,\n            causation_id: command.metadata?.causation_id\n        }\n    }`;
+    const dataFields = eventFields.map(field => {
+        return `${field.name}: command.data.${field.name}`;
+    }).join(',\n            ');
+    return `{\n        streamId: ONE_STREAM_ONLY,\n        type: ${typeName}EventName,\n        data: {\n            ${dataFields}\n        },\n        metadata: {\n            correlation_id: command.metadata?.correlation_id,\n            causation_id: command.metadata?.causation_id\n        }\n    }`;
+}
+
+// @ts-ignore
+function generateFormFields(nonGeneratedFields) {
+    return nonGeneratedFields.map(f => {
+        const fieldType = f.type.toLowerCase() === 'string' ? 'text' : f.type.toLowerCase();
+        const fieldName = f.name;
+        return '                <div>\n' +
+               '                        <label htmlFor="' + fieldName + '">' + fieldName + ':</label>\n' +
+               '                        <input\n' +
+               '                            type="' + fieldType + '"\n' +
+               '                            id="' + fieldName + '"\n' +
+               '                            name="' + fieldName + '"\n' +
+               '                            value={formData[\'' + fieldName + '\']}\n' +
+               '                            onChange={handleChange}\n' +
+               '                            required\n' +
+               '                        />\n' +
+               '                    </div>';
+    }).join('\n');
 }
 
 // --- Main Generator Class ---
@@ -85,26 +108,58 @@ module.exports = class extends Generator {
                 default: 'my-app'
             },
             {
+                type: 'checkbox',
+                name: 'generate',
+                choices: ['skeleton', 'events', 'slices', 'pages', 'eventStore']
+            },
+            {
+                type: 'checkbox',
+                name: 'slices',
+                choices: this.globalConfig.slices.map(it => it.title),
+                loop: false,
+                message: 'Which Slice should be generated?',
+                when: (givenAnswers) => {
+                    return givenAnswers.generate?.includes("slices")
+                },
+            },
+            {
                 type: 'confirm',
                 name: 'setupSupabase',
                 message: 'Do you want to set up Supabase for event persistence?',
+                when: (givenAnswers) => {
+                    return givenAnswers.generate?.includes("eventStore")
+                },
                 default: false
             }
         ]);
         this.log('Eventz Generator: Prompting phase finished.');
     }
 
+    setDefaults() {
+        if (!this.answers.appName) {
+            this.answers.appName = 'my-app';
+        }
+    }
+
     writing() {
         this.log('Eventz Generator: Writing phase starting...');
         this.destinationRoot(this.destinationPath(this.answers.appName));
-        this._writeNextJsScaffolding();
-        this._writingEvents();
-        this._writingCommands();
-        this._writeRegistry();
-        this._writeNextApiRoutes();
-        this._writeUIComponents();
-        this._writeProjections();
-        this._writeReadmodelAPIs();
+        if (this.answers.generate?.includes("skeleton")) {
+            this._writeNextJsScaffolding();
+        }
+        if (this.answers.generate?.includes("events")) {
+            this._writingEvents();
+        }
+        if (this.answers.generate?.includes("slices")) {
+            this._writingCommands();
+            this._writeRegistry();
+            this._writeNextApiRoutes();
+            this._writeProjections();
+            this._writeReadmodelAPIs();
+        }
+        if (this.answers.generate?.includes("pages")) {
+            this._writeUIComponents();
+        }
         if (this.answers.setupSupabase) {
             this._writeSupabaseSetup();
         }
@@ -147,6 +202,8 @@ module.exports = class extends Generator {
         this.fs.copy(this.templatePath('Command.ts.tpl'), this.destinationPath(`${domainDir}/Command.ts`));
         this.fs.copy(this.templatePath('EventStore.ts.tpl'), this.destinationPath(`${domainDir}/EventStore.ts`));
         const infraDir = 'app/src/common/infrastructure';
+        this.fs.copy(this.templatePath('RabbitMQMock.ts.tpl'), this.destinationPath(`${infraDir}/RabbitMQMock.ts`));
+        this.fs.copy(this.templatePath('SignalMock.ts.tpl'), this.destinationPath(`${infraDir}/SignalMock.ts`));
         this.fs.copy(this.templatePath('messageBus.ts.tpl'), this.destinationPath(`${infraDir}/messageBus.ts`));
 
         // Create components directory
@@ -159,10 +216,30 @@ module.exports = class extends Generator {
         const eventsDir = 'app/src/events';
         this.fs.write(this.destinationPath(`${eventsDir}/.gitkeep`), '');
         slices.forEach((slice) => {
+            // Generate regular events from config
             (slice.events || []).filter(ev => ev.title && ev.context !== 'EXTERNAL').forEach((ev) => {
                 const fileName = `${eventTitle(ev)}.ts`;
                 const destinationPath = `${eventsDir}/${fileName}`;
                 const fileContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { Event } from '../common/domain/Event';\n\n${renderEvent(ev)}\n`;
+                this.fs.write(this.destinationPath(destinationPath), fileContent);
+            });
+
+            // Generate "Attempted" events for each command (for async architecture)
+            (slice.commands || []).forEach((command) => {
+                const commandType = commandTitle(command);
+                const attemptedEventTitle = `${commandType}Attempted`;
+                const attemptedEventName = `${attemptedEventTitle}EventName`;
+                const attemptedEventType = `${attemptedEventTitle}`;
+
+                // Use the same fields as the command for the attempted event
+                const fields = command.fields || [];
+                const fieldStrings = fields.map(f => `    ${f.name}: ${tsType(f)}`).join(';\n');
+                const eventNameConst = `export const ${attemptedEventName} = '${attemptedEventTitle}';`;
+                const eventType = `export type ${attemptedEventType} = Event<typeof ${attemptedEventName}, {\n${fieldStrings}\n}>;`;
+
+                const fileName = `${attemptedEventTitle}.ts`;
+                const destinationPath = `${eventsDir}/${fileName}`;
+                const fileContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { Event } from '../common/domain/Event';\n\n${eventNameConst}\n\n${eventType}\n`;
                 this.fs.write(this.destinationPath(destinationPath), fileContent);
             });
         });
@@ -190,29 +267,31 @@ module.exports = class extends Generator {
                 const eventUnion = resultingEvents.map(event => eventTitle(event)).join(' | ') || 'never';
                 const renderedEvents = resultingEvents.map(event => renderEventAssignment(event)).join(',\n');
 
+                const commandPayload = (command.fields || []).map(f => `${f.name}: command.data.${f.name}`).join(',\n                ');
+
                 this.fs.copyTpl(this.templatePath('specific-command.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Command.ts`), { commandPayload: renderCommandPayload(command), commandType: commandType });
                 this.fs.copyTpl(this.templatePath('decider.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Decider.ts`), { commandType, eventImports, eventUnion, resultingEvents: renderedEvents });
-                this.fs.copyTpl(this.templatePath('command-handler.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}CommandHandler.ts`), { commandType });
+                this.fs.copyTpl(this.templatePath('command-handler.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}CommandHandler.ts`), { commandType, commandPayload });
             });
         });
     }
     
     _writeRegistry() {
-        this.log('---> _writeRegistry: Generating command handler registry...');
+        this.log('---> _writeRegistry: Generating RabbitMQ command processor registry...');
         const slices = this.globalConfig.slices || [];
-        const commandHandlerImports = [];
-        const commandHandlerRegistrations = [];
+        const commandProcessorImports = [];
+        const commandProcessorInitializations = [];
 
         slices.forEach(slice => {
             (slice.commands || []).forEach(command => {
                 const commandType = commandTitle(command);
                 const sliceName = pascalCase(slice.title);
-                const handlerCreator = `create${commandType}CommandHandler`;
-                const handlerPath = `./slices/${sliceName}/${commandType}CommandHandler`;
+                const processorCreator = `create${commandType}CommandProcessor`;
+                const processorPath = `./slices/${sliceName}/${commandType}CommandHandler`;
 
-                commandHandlerImports.push(`import { ${handlerCreator} } from '${handlerPath}';`);
-                const registration = `    messageBus.subscribe('${commandType}', ${handlerCreator}(eventStore));`;
-                commandHandlerRegistrations.push(registration);
+                commandProcessorImports.push(`import { ${processorCreator} } from '${processorPath}';`);
+                const initialization = `    ${processorCreator}(eventStore);`;
+                commandProcessorInitializations.push(initialization);
             });
         });
 
@@ -221,8 +300,8 @@ module.exports = class extends Generator {
             this.destinationPath('app/src/registry.ts'),
             {
                 setupSupabase: this.answers.setupSupabase,
-                commandHandlerImports: commandHandlerImports.join('\n'),
-                commandHandlerRegistrations: commandHandlerRegistrations.join('\n')
+                commandHandlerImports: commandProcessorImports.join('\n'),
+                commandHandlerRegistrations: commandProcessorInitializations.join('\n')
             }
         );
     }
@@ -242,6 +321,13 @@ module.exports = class extends Generator {
                 const commandPath = `../../app/src/slices/${sliceName}/${commandType}Command`;
                 const httpMethod = this._getHttpMethodForCommand(command.title);
                 const requiredFields = command.fields || [];
+                const attemptedEventPayload = requiredFields.map(f => {
+                    if (f.generated && f.type.toLowerCase() === 'uuid') {
+                        return `${f.name}: randomUUID()`;
+                    } else {
+                        return `${f.name}: req.body.${f.name}`;
+                    }
+                }).join(',\n                ');
                 const commandPayload = requiredFields.map(f => {
                     if (f.generated && f.type.toLowerCase() === 'uuid') {
                         return `${f.name}: randomUUID()`;
@@ -257,6 +343,7 @@ module.exports = class extends Generator {
                         commandType,
                         commandPath,
                         httpMethod,
+                        attemptedEventPayload,
                         commandPayload
                     }
                 );
@@ -285,20 +372,7 @@ module.exports = class extends Generator {
                     f => !(f.generated && f.type.toLowerCase() === 'uuid')
                     );
 
-                const formFields = nonGeneratedFields.map(f => {
-                    const fieldType = f.type.toLowerCase() === 'string' ? 'text' : f.type.toLowerCase();
-                    return `                <div>
-                        <label htmlFor="${f.name}">${f.name}:</label>
-                        <input
-                            type="${fieldType}"
-                            id="${f.name}"
-                            name="${f.name}"
-                            value={formData.${f.name}}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>`;
-                }).join('\n');
+                const formFields = generateFormFields(nonGeneratedFields);
 
                const commandPayload = nonGeneratedFields
                 .map(f => `${f.name}: ${tsType(f)}`)
@@ -396,51 +470,138 @@ module.exports = class extends Generator {
     _writeProjections() {
         this.log('---> _writeProjections: Generating projection files for readmodels...');
         const slices = this.globalConfig.slices || [];
-        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+        slices.forEach(slice => {
             const sliceName = pascalCase(slice.title);
             const sliceDir = `app/src/slices/${sliceName}`;
             this.fs.write(this.destinationPath(`${sliceDir}/.gitkeep`), '');
 
-            (slice.readmodels || []).forEach(readmodel => {
-                const readmodelName = pascalCase(readmodel.title);
-                const projectionName = `projection${readmodelName}`;
-                const fileName = `${projectionName}.ts`;
-                const destinationPath = `${sliceDir}/${fileName}`;
-                const fields = readmodel.fields || [];
-                const fieldStrings = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
+            if (slice.sliceType === 'STATE_VIEW') {
+                (slice.readmodels || []).forEach(readmodel => {
+                    const readmodelName = pascalCase(readmodel.title);
+                    const projectionName = `projection${readmodelName}`;
+                    const fileName = `${projectionName}.ts`;
+                    const destinationPath = `${sliceDir}/${fileName}`;
+                    const fields = readmodel.fields || [];
+                    const fieldStrings = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
 
-                // Find inbound events
-                const inboundEvents = (readmodel.dependencies || [])
-                    .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'EVENT')
-                    .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
-                    .filter(Boolean);
+                    // Find inbound events
+                    const inboundEvents = (readmodel.dependencies || [])
+                        .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'EVENT')
+                        .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
+                        .filter(Boolean);
 
-                const eventImports = inboundEvents.map(event => {
-                    const title = eventTitle(event);
-                    return `import { ${title}, ${title}EventName } from '../../events/${title}';`;
-                }).join('\n');
+                    const eventImports = inboundEvents.map(event => {
+                        const title = eventTitle(event);
+                        return `import { ${title}, ${title}EventName } from '../../events/${title}';`;
+                    }).join('\n');
 
-                const eventsList = inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
+                    const eventsList = inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
 
-                // Simple evolve function for live projection
-                const evolveCases = inboundEvents.map(event => {
-                    const eventType = eventTitle(event); // e.g., CustomerCreated
-                    const eventFields = event.fields || [];
+                    // For STATE_VIEW, always use regular readmodel template
+                    const evolveCases = inboundEvents.map(event => {
+                        const eventType = eventTitle(event);
+                        const eventFields = event.fields || [];
 
-                    const assignments = eventFields
-                        .map(field => `        ${field.name}: (event.data as any).${field.name},`)
-                        .join('\n');
+                                const assignments = eventFields
+                                    .map(field => `                        ${field.name}: (event.data as any).${field.name},`)
+                                    .join('\n                        ');
 
-                    return `if (event.type === ${eventType}EventName) {\n    return {\n${assignments}\n    };\n}`;
-                }).join('\n');
+                        return `if (event.type === ${eventType}EventName) {\n    return {\n${assignments}\n    };\n}`;
+                    }).join('\n');
 
+                    this.fs.copyTpl(this.templatePath('readmodel.ts.tpl'), this.destinationPath(destinationPath), {
+                        readmodelName,
+                        fieldStrings,
+                        eventImports,
+                        eventsList,
+                        evolveCases,
+                        additionalFields: ''
+                    });
+                });
+            }
 
-                this.fs.copyTpl(this.templatePath('readmodel.ts.tpl'), this.destinationPath(destinationPath), {
-                    readmodelName,
-                    fieldStrings,
-                    eventImports,
-                    eventsList,
-                    evolveCases
+            // Generate todo projections for processors that depend on todoList readmodels
+            (slice.processors || []).forEach(processor => {
+                const deps = processor.dependencies || [];
+                const readmodelDeps = deps.filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
+                readmodelDeps.forEach(dep => {
+                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === dep.id && rm.todoList === true);
+                    if (readmodel) {
+                        const readmodelName = pascalCase(readmodel.title);
+                        const projectionName = `projection${readmodelName}Todo`;
+                        const fileName = `${projectionName}.ts`;
+                        const destinationPath = `${sliceDir}/${fileName}`;
+                        const fields = readmodel.fields || [];
+                        const fieldStrings = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
+
+                        const inboundEvents = (readmodel.dependencies || [])
+                            .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'EVENT')
+                            .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
+                            .filter(Boolean);
+
+                        const eventImports = inboundEvents.map(event => {
+                            const title = eventTitle(event);
+                            return `import { ${title}, ${title}EventName } from '../../events/${title}';`;
+                        }).join('\n');
+
+                        const eventsList = inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
+
+                        // For processors with todo, use todo template
+                        const evolveCases = inboundEvents.map(event => {
+                            const eventType = eventTitle(event);
+                            const eventFields = event.fields || [];
+
+                            // First event (CustomerCreated) adds todo, second event (AccountCreated) removes it
+                            const isAddEvent = inboundEvents.indexOf(event) === 0;
+
+                            if (isAddEvent) {
+                                // Add todo on CustomerCreated event
+                                const assignments = eventFields
+                                    .map((field, index) => '                        ' + field.name + ': (event.data as any).' + field.name + (index < eventFields.length - 1 ? ',' : ''))
+                                    .join('\n');
+
+                                const caseString = [
+                                    '            case ' + eventType + 'EventName: {',
+                                    '                const correlationId = event.metadata?.correlation_id || event.streamId;',
+                                    '                if (!todoMap.has(correlationId)) {',
+                                    '                    todoMap.set(correlationId, {',
+                                    '                        id: correlationId,',
+                                    '                        correlationId,',
+                                    '                        status: \'pending\',',
+                                    '                        createdAt: new Date(Date.now()),',
+                                    '                        updatedAt: new Date(Date.now()),',
+                                    '                        retryCount: 0,',
+                                    assignments,
+                                    '                    });',
+                                    '                }',
+                                    '                break;',
+                                    '            }'
+                                ].join('\n');
+
+                                return caseString;
+                            } else {
+                                // Remove todo on AccountCreated event (correlation by customerId)
+                                return `            case ${eventType}EventName: {
+                const customerId = (event.data as any).customerId; // Assuming AccountCreated has customerId field
+                if (customerId && todoMap.has(customerId)) {
+                    todoMap.delete(customerId);
+                }
+                break;
+            }`;
+                            }
+                        }).join('\n');
+
+                        const additionalFields = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n    ');
+
+                        this.fs.copyTpl(this.templatePath('todo.ts.tpl'), this.destinationPath(destinationPath), {
+                            readmodelName: `${readmodelName}Todo`,
+                            fieldStrings,
+                            eventImports,
+                            eventsList,
+                            evolveCases,
+                            additionalFields
+                        });
+                    }
                 });
             });
         });
