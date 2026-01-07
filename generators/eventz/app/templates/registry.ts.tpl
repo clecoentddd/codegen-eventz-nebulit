@@ -4,7 +4,6 @@
  */
 
 import { EventStore } from './common/domain/EventStore';
-import { rabbitMQMock } from './common/infrastructure/RabbitMQMock';
 import { signalMock } from './common/infrastructure/SignalMock';
 <% if (setupSupabase) { %>
 import { SupabaseEventStore } from './infrastructure/persistence/SupabaseEventStore';

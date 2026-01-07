@@ -5,9 +5,10 @@
 
 import { randomUUID } from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { rabbitMQMock } from '../../app/src/common/infrastructure/RabbitMQMock';
 import { getEventStore } from '../../app/src/registry';
 import { ensureInitialized } from './initializer';
+import { create<%= commandType %>CommandHandler } from '../../app/src/slices/<%= sliceName %>/<%= commandType %>CommandHandler';
+import { <%= commandType %>Command } from '../../app/src/slices/<%= sliceName %>/<%= commandType %>Command';
 
 ensureInitialized();
 
@@ -31,13 +32,12 @@ export default async function handler(
     // ---- identity (if needed by the slice) ----
     const id = randomUUID();
 
-    // ---- Eventz fact: Attempted ----
-    const attemptedEvent = {
-      id: randomUUID(),
+    // ---- create command ----
+    const command: <%= commandType %>Command = {
       streamId: ONE_STREAM_ONLY,
-      type: '<%= commandType %>Attempted',
+      type: '<%= commandType %>',
       data: {
-        <%= attemptedEventPayload %>
+        <%= commandPayload %>
       },
       metadata: {
         correlation_id: correlation_id,
@@ -45,14 +45,9 @@ export default async function handler(
       },
     };
 
-    // ---- append to source of truth ----
-    await getEventStore().appendEvents(ONE_STREAM_ONLY, [attemptedEvent]);
-
-    // ---- publish THE SAME fact for async processing ----
-    await rabbitMQMock.publishToTopic(
-      '<%= commandType %>-queue',
-      attemptedEvent
-    );
+    // ---- call command handler ----
+    const commandHandler = create<%= commandType %>CommandHandler(getEventStore());
+    await commandHandler(command);
 
     // ---- async acknowledgement ----
     res.status(202).json({

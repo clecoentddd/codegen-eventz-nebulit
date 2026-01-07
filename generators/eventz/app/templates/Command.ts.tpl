@@ -3,12 +3,25 @@
  * Licensed under the MIT License.
  */
 
-export type Command<T extends string = string, D = Record<string, unknown>> = {
+<% if (typeof command !== 'undefined' && command) { %>
+import { Command } from '../../common/domain/Command';
+
+export type <%= commandType %>CommandPayload = {
+<%_ command.fields.forEach(function(field) { _%>
+    <%= field.name %>: <%= tsType(field) %>;
+<%_ }); _%>
+};
+
+export type <%= commandType %>Command = Command<<%= commandType %>CommandPayload>;
+<% } else { %>
+export type Command<T = any> = {
     streamId: string;
-    type: T;
-    data: D;
+    id: string;
+    type: string;
+    data: T;
     metadata?: {
         correlation_id?: string;
         causation_id?: string;
     };
 };
+<% } %>

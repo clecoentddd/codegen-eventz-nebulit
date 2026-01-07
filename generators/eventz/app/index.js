@@ -50,6 +50,14 @@ function renderCommandPayload(command) {
     return `export type ${typeName}CommandPayload = {\n${fieldStrings}\n};`;
 }
 
+function renderCommandPayloadFields(command) {
+    const fields = command.fields || [];
+    if (!fields || fields.length === 0) {
+        return '';
+    }
+    return fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
+}
+
 function renderEventAssignment(event) {
     const eventFields = event.fields || [];
     const typeName = eventTitle(event);
@@ -199,12 +207,11 @@ module.exports = class extends Generator {
 
         const domainDir = 'app/src/common/domain';
         this.fs.copy(this.templatePath('Event.ts.tpl'), this.destinationPath(`${domainDir}/Event.ts`));
-        this.fs.copy(this.templatePath('Command.ts.tpl'), this.destinationPath(`${domainDir}/Command.ts`));
+        this.fs.copyTpl(this.templatePath('Command.ts.tpl'), this.destinationPath(`${domainDir}/Command.ts`), { scaffold: true, command: null });
         this.fs.copy(this.templatePath('EventStore.ts.tpl'), this.destinationPath(`${domainDir}/EventStore.ts`));
         const infraDir = 'app/src/common/infrastructure';
         this.fs.copy(this.templatePath('RabbitMQMock.ts.tpl'), this.destinationPath(`${infraDir}/RabbitMQMock.ts`));
         this.fs.copy(this.templatePath('SignalMock.ts.tpl'), this.destinationPath(`${infraDir}/SignalMock.ts`));
-        this.fs.copy(this.templatePath('messageBus.ts.tpl'), this.destinationPath(`${infraDir}/messageBus.ts`));
 
         // Create components directory
         this.fs.write(this.destinationPath('app/src/components/.gitkeep'), '');
@@ -213,9 +220,10 @@ module.exports = class extends Generator {
     _writingEvents() {
         const slices = this.globalConfig.slices || [];
         if (slices.length === 0) return;
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
         const eventsDir = 'app/src/events';
         this.fs.write(this.destinationPath(`${eventsDir}/.gitkeep`), '');
-        slices.forEach((slice) => {
+        selectedSlices.forEach((slice) => {
             // Generate regular events from config
             (slice.events || []).filter(ev => ev.title && ev.context !== 'EXTERNAL').forEach((ev) => {
                 const fileName = `${eventTitle(ev)}.ts`;
@@ -249,7 +257,9 @@ module.exports = class extends Generator {
         const slices = this.globalConfig.slices || [];
         if (slices.length === 0) return;
 
-        slices.forEach((slice) => {
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
+
+        selectedSlices.forEach((slice) => {
             const sliceName = pascalCase(slice.title);
             const sliceDir = `app/src/slices/${sliceName}`;
             this.fs.write(this.destinationPath(`${sliceDir}/.gitkeep`), '');
@@ -269,9 +279,12 @@ module.exports = class extends Generator {
 
                 const commandPayload = (command.fields || []).map(f => `${f.name}: command.data.${f.name}`).join(',\n                ');
 
-                this.fs.copyTpl(this.templatePath('specific-command.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Command.ts`), { commandPayload: renderCommandPayload(command), commandType: commandType });
+                const attemptedEventPayload = (command.fields || []).map(f => `    ${f.name}: ${tsType(f)};`).join('\n');
+
+                this.fs.copyTpl(this.templatePath('Command.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Command.ts`), { commandType, command, tsType, scaffold: false });
                 this.fs.copyTpl(this.templatePath('decider.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}Decider.ts`), { commandType, eventImports, eventUnion, resultingEvents: renderedEvents });
                 this.fs.copyTpl(this.templatePath('command-handler.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}CommandHandler.ts`), { commandType, commandPayload });
+                this.fs.copyTpl(this.templatePath('command-processor.ts.tpl'), this.destinationPath(`${sliceDir}/${commandType}CommandProcessor.ts`), { commandType });
             });
         });
     }
@@ -279,15 +292,16 @@ module.exports = class extends Generator {
     _writeRegistry() {
         this.log('---> _writeRegistry: Generating RabbitMQ command processor registry...');
         const slices = this.globalConfig.slices || [];
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
         const commandProcessorImports = [];
         const commandProcessorInitializations = [];
 
-        slices.forEach(slice => {
+        selectedSlices.forEach(slice => {
             (slice.commands || []).forEach(command => {
                 const commandType = commandTitle(command);
                 const sliceName = pascalCase(slice.title);
                 const processorCreator = `create${commandType}CommandProcessor`;
-                const processorPath = `./slices/${sliceName}/${commandType}CommandHandler`;
+                const processorPath = `./slices/${sliceName}/${commandType}CommandProcessor`;
 
                 commandProcessorImports.push(`import { ${processorCreator} } from '${processorPath}';`);
                 const initialization = `    ${processorCreator}(eventStore);`;
@@ -309,11 +323,12 @@ module.exports = class extends Generator {
     _writeNextApiRoutes() {
         this.log('---> _writeNextApiRoutes: Generating Next.js API routes...');
         const slices = this.globalConfig.slices || [];
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
 
         const initContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { initialize } from '../../app/src/registry';\n\nlet isInitialized = false;\n\nexport function ensureInitialized() {\n    if (!isInitialized) {\n        initialize();\n        isInitialized = true;\n        console.log('[API] Command bus initialized.');\n    }\n}`;
         this.fs.write(this.destinationPath('pages/api/initializer.ts'), initContent);
 
-        slices.forEach(slice => {
+        selectedSlices.forEach(slice => {
             (slice.commands || []).forEach(command => {
                 const commandType = commandTitle(command);
                 const commandSlug = slugify(command.title).toLowerCase();
@@ -344,7 +359,8 @@ module.exports = class extends Generator {
                         commandPath,
                         httpMethod,
                         attemptedEventPayload,
-                        commandPayload
+                        commandPayload,
+                        sliceName
                     }
                 );
             });
@@ -354,8 +370,9 @@ module.exports = class extends Generator {
     _writeUIComponents() {
         this.log('---> _writeUIComponents: Generating UI components for state change...');
         const slices = this.globalConfig.slices || [];
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
 
-        slices.forEach(slice => {
+        selectedSlices.forEach(slice => {
             const sliceName = pascalCase(slice.title);
             const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
 
@@ -453,7 +470,7 @@ module.exports = class extends Generator {
         });
 
         // Update index page with slice links
-        const sliceLinks = slices.map(slice => {
+        const sliceLinks = selectedSlices.map(slice => {
             const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
             return `<Link href="/${sliceSlug}"><a>${slice.title}</a></Link>`;
         }).join('\n                    ');
@@ -470,7 +487,8 @@ module.exports = class extends Generator {
     _writeProjections() {
         this.log('---> _writeProjections: Generating projection files for readmodels...');
         const slices = this.globalConfig.slices || [];
-        slices.forEach(slice => {
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
+        selectedSlices.forEach(slice => {
             const sliceName = pascalCase(slice.title);
             const sliceDir = `app/src/slices/${sliceName}`;
             this.fs.write(this.destinationPath(`${sliceDir}/.gitkeep`), '');
@@ -610,7 +628,8 @@ module.exports = class extends Generator {
     _writeReadmodelAPIs() {
         this.log('---> _writeReadmodelAPIs: Generating Next.js API routes for readmodels...');
         const slices = this.globalConfig.slices || [];
-        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
+        selectedSlices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
             const sliceName = pascalCase(slice.title);
             (slice.readmodels || []).forEach(readmodel => {
                 const readmodelName = pascalCase(readmodel.title);

@@ -10,7 +10,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Event } from '../../common/domain/Event';
 import { EventStore } from '../../common/domain/EventStore';
-import { messageBus } from '../infrastructure/messageBus';
 
 // Get __dirname equivalent in ES modules
 const __filename = url.fileURLToPath(import.meta.url);

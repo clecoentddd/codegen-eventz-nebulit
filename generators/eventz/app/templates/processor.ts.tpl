@@ -2,7 +2,6 @@
  * Copyright (c) 2025 Nebulit GmbH
  * Licensed under the MIT License.
  */
-import { MessageBus } from '../../common/infrastructure/messageBus';
 import { signalMock } from '../../common/infrastructure/SignalMock';
 import { get<%- readmodelName %>TodoProjection } from './projection<%- readmodelName %>';
 
