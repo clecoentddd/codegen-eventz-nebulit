@@ -9,10 +9,11 @@ import { signalMock } from './common/infrastructure/SignalMock';
 import { SupabaseEventStore } from './infrastructure/persistence/SupabaseEventStore';
 <% } %>
 <%- commandHandlerImports %>
+<%- processorImports %>
 
 let eventStoreInstance: EventStore;
 
-export function initialize() {
+export async function initialize() {
     let eventStore: EventStore;
 
     <% if (setupSupabase) { %>
@@ -51,6 +52,9 @@ export function initialize() {
 
     // Initialize all command processors with RabbitMQ subscriptions
 <%- commandHandlerRegistrations %>
+
+    // Initialize all event-driven processors (e.g., todo processors)
+<%- processorInitializations %>
 }
 
 export function getEventStore(): EventStore {

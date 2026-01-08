@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /*
  * Copyright (c) 2025 Nebulit GmbH
@@ -295,6 +296,8 @@ module.exports = class extends Generator {
         const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
         const commandProcessorImports = [];
         const commandProcessorInitializations = [];
+        const processorImports = [];
+        const processorInitializations = [];
 
         selectedSlices.forEach(slice => {
             (slice.commands || []).forEach(command => {
@@ -303,9 +306,34 @@ module.exports = class extends Generator {
                 const processorCreator = `create${commandType}CommandProcessor`;
                 const processorPath = `./slices/${sliceName}/${commandType}CommandProcessor`;
 
+                this.log(`[GENERATOR] Adding command processor: ${processorCreator} at ${processorPath}`);
                 commandProcessorImports.push(`import { ${processorCreator} } from '${processorPath}';`);
                 const initialization = `    ${processorCreator}(eventStore);`;
                 commandProcessorInitializations.push(initialization);
+            });
+
+            (slice.processors || []).forEach(processor => {
+                const deps = processor.dependencies || [];
+                const readmodelDeps = deps.filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
+                readmodelDeps.forEach(dep => {
+                    // Remove todoList check, always generate processor/todo
+                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === dep.id);
+                    if (readmodel) {
+                        const readmodelName = pascalCase(readmodel.title);
+                        const hasTodo = readmodelName.endsWith('Todo');
+                        const todoReadmodelName = hasTodo ? readmodelName : `${readmodelName}Todo`;
+                        const sliceName = pascalCase(slice.title);
+                        const processorCreator = `create${todoReadmodelName}Processor`;
+                        const processorPath = `./slices/${sliceName}/${todoReadmodelName}Processor`;
+
+                        this.log(`[GENERATOR] Adding todo processor: ${processorCreator} at ${processorPath} for readmodel ${readmodel.title}`);
+                        processorImports.push(`import { ${processorCreator} } from '${processorPath}';`);
+                        const initialization = `    await ${processorCreator}().start();`;
+                        processorInitializations.push(initialization);
+                    } else {
+                        this.log(`[GENERATOR][WARN] Readmodel not found for processor dependency id=${dep.id} in slice ${slice.title}`);
+                    }
+                });
             });
         });
 
@@ -315,7 +343,9 @@ module.exports = class extends Generator {
             {
                 setupSupabase: this.answers.setupSupabase,
                 commandHandlerImports: commandProcessorImports.join('\n'),
-                commandHandlerRegistrations: commandProcessorInitializations.join('\n')
+                commandHandlerRegistrations: commandProcessorInitializations.join('\n'),
+                processorImports: processorImports.join('\n'),
+                processorInitializations: processorInitializations.join('\n')
             }
         );
     }
@@ -325,7 +355,7 @@ module.exports = class extends Generator {
         const slices = this.globalConfig.slices || [];
         const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
 
-        const initContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { initialize } from '../../app/src/registry';\n\nlet isInitialized = false;\n\nexport function ensureInitialized() {\n    if (!isInitialized) {\n        initialize();\n        isInitialized = true;\n        console.log('[API] Command bus initialized.');\n    }\n}`;
+        const initContent = `/*\n * Copyright (c) 2025 Nebulit GmbH\n * Licensed under the MIT License.\n */\n\nimport { initialize } from '../../app/src/registry';\n\nlet isInitialized = false;\n\nexport async function ensureInitialized() {\n    if (!isInitialized) {\n        await initialize();\n        isInitialized = true;\n        console.log('[API] Command bus initialized.');\n    }\n}`;
         this.fs.write(this.destinationPath('pages/api/initializer.ts'), initContent);
 
         selectedSlices.forEach(slice => {
@@ -365,109 +395,6 @@ module.exports = class extends Generator {
                 );
             });
         });
-    }
-
-    _writeUIComponents() {
-        this.log('---> _writeUIComponents: Generating UI components for state change...');
-        const slices = this.globalConfig.slices || [];
-        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
-
-        selectedSlices.forEach(slice => {
-            const sliceName = pascalCase(slice.title);
-            const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
-
-            // Create ui directory for the slice
-            this.fs.write(this.destinationPath(`app/src/slices/${sliceName}/ui/.gitkeep`), '');
-
-            // Generate command UI components
-            (slice.commands || []).forEach(command => {
-                const commandType = commandTitle(command);
-                const commandSlug = slugify(command.title).toLowerCase();
-                const requiredFields = command.fields || [];
-
-                const nonGeneratedFields = requiredFields.filter(
-                    f => !(f.generated && f.type.toLowerCase() === 'uuid')
-                    );
-
-                const formFields = generateFormFields(nonGeneratedFields);
-
-               const commandPayload = nonGeneratedFields
-                .map(f => `${f.name}: ${tsType(f)}`)
-                .join('; ');
-
-                const commandPayloadDefaults = nonGeneratedFields.length
-                    ? `{ ${nonGeneratedFields.map(f => `${f.name}: ''`).join(', ')} }`
-                    : '{}';
-
-                this.fs.copyTpl(
-                this.templatePath('commandUI.tsx.tpl'),
-                this.destinationPath(`app/src/slices/${sliceName}/ui/${commandType}UI.tsx`),
-                {
-                    commandType,
-                    commandSlug,
-                    commandTitle: command.title,
-                    commandPayload: commandPayload || 'any',
-                    commandPayloadDefaults: commandPayloadDefaults || '',
-                    formFields
-                }
-                );
-            });
-
-            // Generate screen components for STATE_VIEW slices
-            let screenUIs = '';
-            let screenImports = '';
-            if (slice.sliceType === 'STATE_VIEW') {
-                (slice.screens || []).forEach(screen => {
-                    const screenSlug = slugify(screen.title).toLowerCase();
-                    const readmodelDeps = (screen.dependencies || [])
-                        .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL')
-                        .map(dep => (this.globalConfig.slices || []).flatMap(s => s.readmodels).find(rm => rm.id === dep.id))
-                        .filter(Boolean);
-
-                    if (readmodelDeps.length > 0) {
-                        const readmodel = readmodelDeps[0]; // Assume one readmodel per screen
-                        const apiSlug = slugify(readmodel.title).toLowerCase();
-                        const screenName = pascalCase(screen.title);
-
-                        this.fs.copyTpl(this.templatePath('screen.tsx.tpl'), this.destinationPath(`app/src/slices/${sliceName}/ui/${screenName}.tsx`), {
-                            screenName,
-                            screenTitle: screen.title,
-                            apiSlug
-                        });
-
-                        screenUIs += `<${screenName} />\n            `;
-                        screenImports += `import ${screenName} from '../app/src/slices/${sliceName}/ui/${screenName}';\n`;
-                    }
-                });
-            }
-
-            // Generate slice page only if there are commands or screens
-            if ((slice.commands || []).length > 0 || screenUIs) {
-                const commandUIs = (slice.commands || []).map(command => {
-                    const commandType = commandTitle(command);
-                    return `<${commandType}UI />`;
-                }).join('\n            ');
-
-                const commandImports = (slice.commands || []).map(command => {
-                    const commandType = commandTitle(command);
-                    return `import { ${commandType}UI } from '../app/src/slices/${sliceName}/ui/${commandType}UI';`;
-                }).join('\n');
-
-                const allUIs = [commandUIs, screenUIs].filter(Boolean).join('\n            ');
-                const allImports = [commandImports, screenImports].filter(Boolean).join('\n');
-
-                this.fs.copyTpl(
-                    this.templatePath('page.tsx.tpl'),
-                    this.destinationPath(`pages/${sliceSlug}.tsx`),
-                    {
-                        sliceName,
-                        sliceTitle: slice.title,
-                        commandUIs: allUIs,
-                        commandImports: allImports
-                    }
-                );
-            }
-        });
 
         // Update index page with slice links
         const sliceLinks = selectedSlices.map(slice => {
@@ -484,8 +411,117 @@ module.exports = class extends Generator {
         );
     }
 
+    _writeUIComponents() {
+        this.log('---> _writeUIComponents: Generating UI pages for slices...');
+        const slices = this.globalConfig.slices || [];
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
+        selectedSlices.forEach(slice => {
+            const sliceName = pascalCase(slice.title);
+            const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
+            const pagePath = `pages/${sliceSlug}.tsx`;
+            // Compose UI imports and components for commands
+            const commandUIs = (slice.commands || []).map(command => {
+                const commandType = commandTitle(command);
+                return `<${commandType}UI />`;
+            }).join('\n            ');
+            const commandImports = (slice.commands || []).map(command => {
+                const commandType = commandTitle(command);
+                return `import { ${commandType}UI } from '../app/src/slices/${sliceName}/ui/${commandType}UI';`;
+            }).join('\n');
+            // Compose UI imports and components for screens
+            const screenUIs = (slice.screens || []).map(screen => {
+                const screenType = pascalCase(screen.title);
+                return `<${screenType} />`;
+            }).join('\n            ');
+            const screenImports = (slice.screens || []).map(screen => {
+                const screenType = pascalCase(screen.title);
+                return `import ${screenType} from '../app/src/slices/${sliceName}/ui/${screenType}';`;
+            }).join('\n');
+            const allUIs = [commandUIs, screenUIs].filter(Boolean).join('\n            ');
+            const allImports = [commandImports, screenImports].filter(Boolean).join('\n');
+            this.fs.copyTpl(
+                this.templatePath('page.tsx.tpl'),
+                this.destinationPath(pagePath),
+                {
+                    sliceName,
+                    sliceTitle: slice.title,
+                    commandUIs: allUIs,
+                    commandImports: allImports
+                }
+            );
+
+
+            // Generate UI files for commands
+            const uiDir = `app/src/slices/${sliceName}/ui`;
+            (slice.commands || []).forEach(command => {
+                const commandType = commandTitle(command);
+                const commandSlug = slugify(command.title).toLowerCase();
+                // Build TypeScript type for form fields
+                const commandPayload = (command.fields || []).map(f => `${f.name}: ${tsType(f)}`).join('; ');
+                // Build default values for form fields
+                const commandPayloadDefaults = '{ ' + (command.fields || []).map(f => `${f.name}: ${getDefaultValue(f)}`).join(', ') + ' }';
+                // Build a user-friendly command title
+                const commandTitleStr = command.title || commandType;
+                // Build form fields JSX
+                const formFields = generateFormFields(command.fields || []);
+                this.fs.copyTpl(
+                    this.templatePath('commandUI.tsx.tpl'),
+                    this.destinationPath(`${uiDir}/${commandType}UI.tsx`),
+                    {
+                        commandType,
+                        command,
+                        commandPayload,
+                        commandPayloadDefaults,
+                        commandSlug,
+                        commandTitle: commandTitleStr,
+                        formFields
+                    }
+                );
+            });
+// Helper for default values in UI forms
+function getDefaultValue(field) {
+    const type = (field.type || '').toLowerCase();
+    if (type === 'string' || type === 'uuid') return "''";
+    if (type === 'int' || type === 'integer' || type === 'double' || type === 'decimal' || type === 'number') return '0';
+    if (type === 'boolean') return 'false';
+    if (type === 'date' || type === 'datetime') return "''";
+    return 'null';
+}
+
+            // Generate UI files for screens
+            (slice.screens || []).forEach(screen => {
+                const screenType = pascalCase(screen.title);
+                const screenName = screenType;
+                const screenTitle = screen.title || screenType;
+                
+                // Find the readmodel this screen depends on (INBOUND dependency)
+                const readmodelDep = (screen.dependencies || []).find(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
+                let apiSlug = slugify(screen.title).toLowerCase(); // default to screen's own slug
+                if (readmodelDep) {
+                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === readmodelDep.id);
+                    if (readmodel) {
+                        apiSlug = slugify(readmodel.title).toLowerCase();
+                    }
+                }
+                
+                this.fs.copyTpl(
+                    this.templatePath('screen.tsx.tpl'),
+                    this.destinationPath(`${uiDir}/${screenType}.tsx`),
+                    {
+                        screenType,
+                        screenName,
+                        apiSlug,
+                        screenTitle,
+                        screen
+                    }
+                );
+            });
+        });
+    }
+
     _writeProjections() {
         this.log('---> _writeProjections: Generating projection files for readmodels...');
+        const log = (...args) => this.log('[GENERATOR]', ...args);
         const slices = this.globalConfig.slices || [];
         const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
         selectedSlices.forEach(slice => {
@@ -520,9 +556,9 @@ module.exports = class extends Generator {
                         const eventType = eventTitle(event);
                         const eventFields = event.fields || [];
 
-                                const assignments = eventFields
-                                    .map(field => `                        ${field.name}: (event.data as any).${field.name},`)
-                                    .join('\n                        ');
+                        const assignments = eventFields
+                            .map(field => `                        ${field.name}: (event.data as any).${field.name},`)
+                            .join('\n                        ');
 
                         return `if (event.type === ${eventType}EventName) {\n    return {\n${assignments}\n    };\n}`;
                     }).join('\n');
@@ -543,7 +579,7 @@ module.exports = class extends Generator {
                 const deps = processor.dependencies || [];
                 const readmodelDeps = deps.filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
                 readmodelDeps.forEach(dep => {
-                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === dep.id && rm.todoList === true);
+                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === dep.id);
                     if (readmodel) {
                         const readmodelName = pascalCase(readmodel.title);
                         const projectionName = `projection${readmodelName}Todo`;
@@ -599,6 +635,7 @@ module.exports = class extends Generator {
                                 return caseString;
                             } else {
                                 // Remove todo on AccountCreated event (correlation by customerId)
+                        log(`    No matching readmodel with todoList:true for dep:`, dep);
                                 return `            case ${eventType}EventName: {
                 const customerId = (event.data as any).customerId; // Assuming AccountCreated has customerId field
                 if (customerId && todoMap.has(customerId)) {
@@ -611,13 +648,48 @@ module.exports = class extends Generator {
 
                         const additionalFields = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n    ');
 
+                        // Always export as get[ReadmodelName]TodoProjection for consistency
+                        // Only append 'Todo' if not already present
+                        const hasTodo = readmodelName.endsWith('Todo');
+                        const todoReadmodelName = hasTodo ? readmodelName : `${readmodelName}Todo`;
+
                         this.fs.copyTpl(this.templatePath('todo.ts.tpl'), this.destinationPath(destinationPath), {
-                            readmodelName: `${readmodelName}Todo`,
+                            readmodelName: todoReadmodelName,
                             fieldStrings,
                             eventImports,
                             eventsList,
                             evolveCases,
-                            additionalFields
+                            additionalFields,
+                            todoProjectionExportName: `get${todoReadmodelName}Projection`
+                        });
+
+                        // Generate processor file using processor.ts.tpl
+                        const processorFileName = `${todoReadmodelName}Processor.ts`;
+                        const processorDestinationPath = `${sliceDir}/${processorFileName}`;
+
+                        // Find the command that the processor depends on (OUTBOUND COMMAND)
+                        const commandDeps = processor.dependencies.filter(dep => dep.type === 'OUTBOUND' && dep.elementType === 'COMMAND');
+                        let commandType = '';
+                        let commandPayload = '';
+                        if (commandDeps.length > 0) {
+                            const command = this.globalConfig.slices.flatMap(s => s.commands).find(c => c.id === commandDeps[0].id);
+                            if (command) {
+                                commandType = commandTitle(command);
+                                commandPayload = (command.fields || []).map(f => {
+                                    if (f.generated && f.type.toLowerCase() === 'uuid') {
+                                        return `${f.name}: randomUUID()`;
+                                    } else {
+                                        return `${f.name}: todo.${f.name}`;
+                                    }
+                                }).join(',\n                ');
+                            }
+                        }
+
+                        this.fs.copyTpl(this.templatePath('processor.ts.tpl'), this.destinationPath(processorDestinationPath), {
+                            readmodelName: todoReadmodelName,
+                            commandType,
+                            commandPayload,
+                            todoProjectionExportName: `get${todoReadmodelName}Projection`
                         });
                     }
                 });

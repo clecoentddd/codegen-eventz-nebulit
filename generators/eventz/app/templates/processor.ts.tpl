@@ -2,8 +2,9 @@
  * Copyright (c) 2025 Nebulit GmbH
  * Licensed under the MIT License.
  */
+import { randomUUID } from 'crypto';
 import { signalMock } from '../../common/infrastructure/SignalMock';
-import { get<%- readmodelName %>TodoProjection } from './projection<%- readmodelName %>';
+import { <%- todoProjectionExportName %> } from './projection<%- readmodelName %>';
 
 export interface TodoProcessorConfig {
     queueName: string;
@@ -17,7 +18,7 @@ const config: TodoProcessorConfig = {
     batchSize: 10
 };
 
-export class <%- readmodelName %>TodoProcessor {
+export class <%- readmodelName %>Processor {
     private processing: boolean = false;
 
     constructor() {
@@ -46,7 +47,7 @@ export class <%- readmodelName %>TodoProcessor {
         this.processing = true;
 
         try {
-            const pendingTodos = await get<%- readmodelName %>TodoProjection();
+            const pendingTodos = await <%- todoProjectionExportName %>();
 
             if (pendingTodos.length === 0) {
                 console.log('No pending todos to process');
@@ -129,6 +130,6 @@ export class <%- readmodelName %>TodoProcessor {
 }
 
 // Factory function for creating the processor
-export function create<%- readmodelName %>TodoProcessor(): <%- readmodelName %>TodoProcessor {
-    return new <%- readmodelName %>TodoProcessor();
+export function create<%- readmodelName %>Processor(): <%- readmodelName %>Processor {
+    return new <%- readmodelName %>Processor();
 }

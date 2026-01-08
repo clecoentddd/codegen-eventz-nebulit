@@ -16,14 +16,14 @@ export type ProcessorTodoItem = {
     <%- additionalFields %>
 };
 
-export type <%- readmodelName %>TodoReadModel = ProcessorTodoItem & {
+export type <%- readmodelName %>ReadModel = ProcessorTodoItem & {
 <%- fieldStrings %>
 };
 
-let todoProjection: <%- readmodelName %>TodoReadModel[] = [];
+let todoProjection: <%- readmodelName %>ReadModel[] = [];
 let isInitialized = false;
 
-export async function get<%- readmodelName %>TodoProjection(): Promise<<%- readmodelName %>TodoReadModel[]> {
+export async function <%- todoProjectionExportName %>(): Promise<<%- readmodelName %>ReadModel[]> {
     if (!isInitialized) {
         await initializeTodoProjection();
     }
@@ -39,7 +39,7 @@ const initializeTodoProjection = async () => {
     const events = await eventStore.getAllEvents() ?? [];
 
     // Correlation-based todo projection: CustomerCreated without AccountCreated
-    const todoMap = new Map<string, <%- readmodelName %>TodoReadModel>();
+    const todoMap = new Map<string, <%- readmodelName %>ReadModel>();
 
     for (const event of events) {
         switch (event.type) {
@@ -53,7 +53,7 @@ const initializeTodoProjection = async () => {
 
     // Subscribe to relevant events for real-time updates
 <% eventsList.split(', ').forEach(eventName => { %>
-    signalMock.subscribe('<%= eventName %>', (event: any) => {
+    signalMock.subscribe(<%= eventName %>, (event: any) => {
         // Update todo projection based on new event
         evolveTodo(event, todoMap);
         todoProjection = Array.from(todoMap.values());
@@ -65,7 +65,7 @@ const initializeTodoProjection = async () => {
     console.log(`[<%= readmodelName %>TodoProjection] Initialized and subscribed to events`);
 };
 
-const evolveTodo = (event: any, todoMap: Map<string, <%- readmodelName %>TodoReadModel>) => {
+const evolveTodo = (event: any, todoMap: Map<string, <%- readmodelName %>ReadModel>) => {
     switch (event.type) {
 <%- evolveCases %>
         default:
