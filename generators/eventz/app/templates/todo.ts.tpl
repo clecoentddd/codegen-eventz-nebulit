@@ -7,8 +7,8 @@ import { signalMock } from '../../common/infrastructure/SignalMock';
 <%- eventImports %>
 
 export type ProcessorTodoItem = {
-    id: string;
-    correlationId: string;
+    id: string;               // workflow or entity key
+    correlationId: string;    // workflow correlation (placeholder)
     status: 'pending' | 'processing' | 'completed' | 'failed';
     createdAt: Date;
     updatedAt: Date;
@@ -17,7 +17,7 @@ export type ProcessorTodoItem = {
 };
 
 export type <%- readmodelName %>ReadModel = ProcessorTodoItem & {
-<%- fieldStrings %>
+    <%- fieldStrings %>
 };
 
 let todoProjection: <%- readmodelName %>ReadModel[] = [];
@@ -27,45 +27,46 @@ export async function <%- todoProjectionExportName %>(): Promise<<%- readmodelNa
     if (!isInitialized) {
         await initializeTodoProjection();
     }
-    return todoProjection.filter(todo => todo.status === 'pending')
+
+    return todoProjection
+        .filter(todo => todo.status === 'pending')
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 };
 
 const initializeTodoProjection = async () => {
     if (isInitialized) return;
 
-    // Rebuild projection from event store
+    console.log(`[<%- readmodelName %>TodoProjection] Initializing projection...`);
+
     const eventStore = new SupabaseEventStore();
     const events = await eventStore.getAllEvents() ?? [];
+    console.log(`[<%- readmodelName %>TodoProjection] Loaded ${events.length} events`);
 
-    // Correlation-based todo projection: CustomerCreated without AccountCreated
-    const todoMap = new Map<string, <%- readmodelName %>ReadModel>();
+    // Map keyed by correlationId, value is a generic object to track workflow state
+    const stateMap = new Map<string, Record<string, any>>();
 
+    // Build initial state from events
     for (const event of events) {
-        switch (event.type) {
-<%- evolveCases %>
-            default:
-                break;
-        }
+        evolveState(event, stateMap);
     }
 
-    todoProjection = Array.from(todoMap.values());
+    rebuildTodos(stateMap);
 
-    // Subscribe to relevant events for real-time updates
+    // Subscribe to events for live updates
 <% eventsList.split(', ').forEach(eventName => { %>
     signalMock.subscribe(<%= eventName %>, (event: any) => {
-        // Update todo projection based on new event
-        evolveTodo(event, todoMap);
-        todoProjection = Array.from(todoMap.values());
-        console.log(`[<%= readmodelName %>TodoProjection] Updated on event: ${event.type}`);
+        console.log(`[<%- readmodelName %>TodoProjection] Received event: ${event.type}`);
+        evolveState(event, stateMap);
+        rebuildTodos(stateMap);
     });
 <% }); %>
 
     isInitialized = true;
-    console.log(`[<%= readmodelName %>TodoProjection] Initialized and subscribed to events`);
+    console.log(`[<%- readmodelName %>TodoProjection] Initialized and subscribed to events`);
 };
 
-const evolveTodo = (event: any, todoMap: Map<string, <%- readmodelName %>ReadModel>) => {
+// Updates the internal stateMap for each event
+const evolveState = (event: any, stateMap: Map<string, Record<string, any>>) => {
     switch (event.type) {
 <%- evolveCases %>
         default:
@@ -73,9 +74,34 @@ const evolveTodo = (event: any, todoMap: Map<string, <%- readmodelName %>ReadMod
     }
 };
 
-// Database trigger function for RabbitMQ notifications
+// Converts stateMap to pending todos
+const rebuildTodos = (stateMap: Map<string, Record<string, any>>) => {
+    const next: <%- readmodelName %>ReadModel[] = [];
+
+    stateMap.forEach((state, key) => {
+        // Only add todo if OUTBOUND event hasn't occurred yet
+        // A todo is pending if we have the INBOUND event but not the OUTBOUND event
+        // Check if the state indicates the workflow is incomplete (customize this condition based on your events)
+        const hasPendingWork = !state.completed; // Adjust this based on your actual state tracking
+
+        if (hasPendingWork) {
+            next.push({
+                id: key,
+                correlationId: key,
+                status: 'pending',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                retryCount: 0,
+                ...state // Spread all fields from the state
+            });
+        }
+    });
+
+    todoProjection = next;
+    console.log(`[<%- readmodelName %>TodoProjection] Rebuilt todos (${todoProjection.length} pending)`);
+};
+
+// Optional hook for DB triggers / RabbitMQ
 export async function notifyTodoProcessor(todoId: string, correlationId: string): Promise<void> {
-    // This function will be called by database triggers
-    // Implementation depends on RabbitMQ setup
-    console.log(`Notifying processor for todo ${todoId} with correlation ${correlationId}`);
+    console.log(`[<%- readmodelName %>TodoProjection] Notifying processor for todo ${todoId} with correlation ${correlationId}`);
 }

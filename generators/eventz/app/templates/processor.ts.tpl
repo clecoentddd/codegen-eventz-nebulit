@@ -5,6 +5,11 @@
 import { randomUUID } from 'crypto';
 import { signalMock } from '../../common/infrastructure/SignalMock';
 import { <%- todoProjectionExportName %> } from './projection<%- readmodelName %>';
+<% if (commandType) { %>
+import { <%- commandType %>Command } from './<%- commandType %>Command';
+import { createCreate<%- commandType %>CommandHandler } from './Create<%- commandType %>CommandHandler';
+import { getEventStore } from '../../registry';
+<% } %>
 
 export interface TodoProcessorConfig {
     queueName: string;
@@ -29,8 +34,8 @@ export class <%- readmodelName %>Processor {
         console.log(`Starting <%- readmodelName %> Todo Processor...`);
 
         // Subscribe to signals for event-driven processing
-        // Listen for events that might create todos (e.g., CustomerCreated)
         signalMock.subscribe('CustomerCreated', async (event: any) => {
+            console.log(`[Processor] Received event: ${event.type}`);
             await this.processPendingTodos();
         });
 
@@ -40,7 +45,7 @@ export class <%- readmodelName %>Processor {
 
     private async processPendingTodos(): Promise<void> {
         if (this.processing) {
-            console.log('Todo processor already running, skipping...');
+            console.log('[Processor] Already running, skipping...');
             return;
         }
 
@@ -50,86 +55,91 @@ export class <%- readmodelName %>Processor {
             const pendingTodos = await <%- todoProjectionExportName %>();
 
             if (pendingTodos.length === 0) {
-                console.log('No pending todos to process');
+                console.log('[Processor] No pending todos to process');
                 return;
             }
 
-            console.log(`Processing ${pendingTodos.length} pending todos...`);
-
+            console.log(`[Processor] Processing ${pendingTodos.length} pending todos...`);
+            
             // Process todos in batches
-            const batches = [];
             for (let i = 0; i < pendingTodos.length; i += config.batchSize) {
-                batches.push(pendingTodos.slice(i, i + config.batchSize));
-            }
-
-            for (const batch of batches) {
+                const batch = pendingTodos.slice(i, i + config.batchSize);
                 await this.processBatch(batch);
             }
 
         } catch (error) {
-            console.error('Error processing todos:', error);
+            console.error('[Processor] Error processing todos:', error);
         } finally {
             this.processing = false;
         }
     }
 
     private async processBatch(todos: any[]): Promise<void> {
-        const promises = todos.map(async (todo) => {
-            try {
-                await this.processTodo(todo);
-            } catch (error) {
-                console.error(`Failed to process todo ${todo.id}:`, error);
-                await this.handleProcessingError(todo, error);
-            }
-        });
-
-        await Promise.allSettled(promises);
+        await Promise.allSettled(
+            todos.map(async (todo) => {
+                try {
+                    await this.processTodo(todo);
+                } catch (error) {
+                    console.error(`[Processor] Failed to process todo ${todo.id}:`, error);
+                    await this.handleProcessingError(todo, error);
+                }
+            })
+        );
     }
 
     private async processTodo(todo: any): Promise<void> {
         // Idempotent processing - check if already processed
         if (todo.status === 'processing') {
-            console.log(`Todo ${todo.id} already being processed, skipping...`);
+            console.log(`[Processor] Todo ${todo.id} already being processed, skipping...`);
             return;
         }
 
-        console.log(`Processing todo: ${JSON.stringify(todo)}`);
+        console.log(`[Processor] Processing todo: ${JSON.stringify(todo)}`);
 
-        // TODO: Replace with actual command dispatch based on processor configuration
-        // Example: await this.messageBus.publish('<%- commandType %>', {
-        //     streamId: todo.correlationId, // Use correlationId as streamId
-        //     type: '<%- commandType %>',
-        //     data: {
-        //         <%- commandPayload %>
-        //     },
-        //     metadata: {
-        //         correlation_id: todo.correlationId,
-        //         causation_id: todo.correlationId
-        //     }
-        // });
+<% if (commandType && commandPayload) { %>
+        // Create and dispatch command
+        const command: <%- commandType %>Command = {
+            streamId: randomUUID(),
+            type: '<%- commandType %>',
+            data: {
+                <%- commandPayload %>
+            },
+            metadata: {
+                correlation_id: todo.correlationId,
+                causation_id: todo.id
+            }
+        };
 
-        console.log(`Successfully processed todo ${todo.id}`);
+        const eventStore = getEventStore();
+        const handler = createCreate<%- commandType %>CommandHandler(eventStore);
+        await handler(command);
+        
+        console.log(`[Processor] Successfully dispatched <%- commandType %> command for todo ${todo.id}`);
+<% } else { %>
+        // TODO: No outbound command configured - add command dispatch logic here
+        console.log(`[Processor] Successfully processed todo ${todo.id}`);
+<% } %>
     }
 
     private async handleProcessingError(todo: any, error: any): Promise<void> {
         const retryCount = (todo.retryCount || 0) + 1;
 
         if (retryCount >= config.maxRetries) {
-            console.error(`Todo ${todo.id} failed permanently after ${retryCount} retries`);
+            console.error(`[Processor] Todo ${todo.id} failed permanently after ${retryCount} retries`);
             // TODO: Publish failure message to dead letter queue
         } else {
-            console.log(`Todo ${todo.id} failed, will retry (${retryCount}/${config.maxRetries})`);
+            console.log(`[Processor] Todo ${todo.id} failed, will retry (${retryCount}/${config.maxRetries})`);
             // TODO: Publish retry message with delay
         }
     }
 
     async stop(): Promise<void> {
-        console.log('Stopping <%- readmodelName %> Todo Processor...');
+        console.log(`Stopping <%- readmodelName %> Todo Processor...`);
         this.processing = false;
     }
 }
 
-// Factory function for creating the processor
+// Factory function
 export function create<%- readmodelName %>Processor(): <%- readmodelName %>Processor {
     return new <%- readmodelName %>Processor();
 }
