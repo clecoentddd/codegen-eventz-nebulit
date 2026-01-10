@@ -7,9 +7,11 @@ import { signalMock } from '../../common/infrastructure/SignalMock';
 import { <%- todoProjectionExportName %> } from './projection<%- readmodelName %>';
 <% if (commandType) { %>
 import { <%- commandType %>Command } from './<%- commandType %>Command';
-import { createCreate<%- commandType %>CommandHandler } from './Create<%- commandType %>CommandHandler';
+import { create<%- commandType %>CommandHandler } from './<%- commandType %>CommandHandler';
 import { getEventStore } from '../../registry';
 <% } %>
+
+const ONE_STREAM_ONLY = "ONE_STREAM_ONLY";
 
 export interface TodoProcessorConfig {
     queueName: string;
@@ -34,7 +36,7 @@ export class <%- readmodelName %>Processor {
         console.log(`Starting <%- readmodelName %> Todo Processor...`);
 
         // Subscribe to signals for event-driven processing
-        signalMock.subscribe('CustomerCreated', async (event: any) => {
+        signalMock.subscribe('<%- inboundEventName %>', async (event: any) => {
             console.log(`[Processor] Received event: ${event.type}`);
             await this.processPendingTodos();
         });
@@ -52,7 +54,8 @@ export class <%- readmodelName %>Processor {
         this.processing = true;
 
         try {
-            const pendingTodos = await <%- todoProjectionExportName %>();
+            const eventStore = getEventStore();
+            const pendingTodos = await <%- todoProjectionExportName %>(eventStore);
 
             if (pendingTodos.length === 0) {
                 console.log('[Processor] No pending todos to process');
@@ -75,16 +78,14 @@ export class <%- readmodelName %>Processor {
     }
 
     private async processBatch(todos: any[]): Promise<void> {
-        await Promise.allSettled(
-            todos.map(async (todo) => {
-                try {
-                    await this.processTodo(todo);
-                } catch (error) {
-                    console.error(`[Processor] Failed to process todo ${todo.id}:`, error);
-                    await this.handleProcessingError(todo, error);
-                }
-            })
-        );
+        for (const todo of todos) {
+            try {
+                await this.processTodo(todo);
+            } catch (error) {
+                console.error(`[Processor] Failed to process todo ${todo.id}:`, error);
+                await this.handleProcessingError(todo, error);
+            }
+        }
     }
 
     private async processTodo(todo: any): Promise<void> {
@@ -99,7 +100,7 @@ export class <%- readmodelName %>Processor {
 <% if (commandType && commandPayload) { %>
         // Create and dispatch command
         const command: <%- commandType %>Command = {
-            streamId: randomUUID(),
+            streamId: ONE_STREAM_ONLY,
             type: '<%- commandType %>',
             data: {
                 <%- commandPayload %>
@@ -111,7 +112,7 @@ export class <%- readmodelName %>Processor {
         };
 
         const eventStore = getEventStore();
-        const handler = createCreate<%- commandType %>CommandHandler(eventStore);
+        const handler = create<%- commandType %>CommandHandler(eventStore);
         await handler(command);
         
         console.log(`[Processor] Successfully dispatched <%- commandType %> command for todo ${todo.id}`);

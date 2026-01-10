@@ -593,23 +593,41 @@ function getDefaultValue(field) {
                             .map(dep => (this.globalConfig.slices || []).flatMap(s => s.events).find(ev => ev.id === dep.id))
                             .filter(Boolean);
 
-                        const eventImports = inboundEvents.map(event => {
+                        // Find OUTBOUND command from the processor to get the Attempted event
+                        const commandDeps = processor.dependencies.filter(dep => dep.type === 'OUTBOUND' && dep.elementType === 'COMMAND');
+                        let attemptedEventName = null;
+                        let attemptedEventImport = null;
+                        if (commandDeps.length > 0) {
+                            const command = this.globalConfig.slices.flatMap(s => s.commands).find(c => c.id === commandDeps[0].id);
+                            if (command) {
+                                const cmdTitle = commandTitle(command);
+                                attemptedEventName = `${cmdTitle}Attempted`;
+                                attemptedEventImport = `import { ${attemptedEventName}, ${attemptedEventName}EventName } from '../../events/${attemptedEventName}';`;
+                            }
+                        }
+
+                        // Combine inbound events import with attempted event import
+                        const inboundEventImports = inboundEvents.map(event => {
                             const title = eventTitle(event);
                             return `import { ${title}, ${title}EventName } from '../../events/${title}';`;
                         }).join('\n');
+                        
+                        const eventImports = attemptedEventImport ? `${inboundEventImports}\n${attemptedEventImport}` : inboundEventImports;
 
-                        const eventsList = inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
+                        const eventsList = attemptedEventName 
+                            ? [...inboundEvents.map(event => `${eventTitle(event)}EventName`), `${attemptedEventName}EventName`].join(', ')
+                            : inboundEvents.map(event => `${eventTitle(event)}EventName`).join(', ');
 
                         // For processors with todo, use todo template
-                        const evolveCases = inboundEvents.map(event => {
+                        let evolveCases = inboundEvents.map((event, index) => {
                             const eventType = eventTitle(event);
                             const eventFields = event.fields || [];
 
-                            // First event (CustomerCreated) adds todo, second event (AccountCreated) removes it
-                            const isAddEvent = inboundEvents.indexOf(event) === 0;
+                            // First event adds todo
+                            const isAddEvent = index === 0;
 
                             if (isAddEvent) {
-                                // Add todo on CustomerCreated event
+                                // First event adds todo
                                 const assignments = eventFields
                                     .map((field, index) => '                        ' + field.name + ': (event.data as any).' + field.name + (index < eventFields.length - 1 ? ',' : ''))
                                     .join('\n');
@@ -617,8 +635,8 @@ function getDefaultValue(field) {
                                 const caseString = [
                                     '            case ' + eventType + 'EventName: {',
                                     '                const correlationId = event.metadata?.correlation_id || event.streamId;',
-                                    '                if (!todoMap.has(correlationId)) {',
-                                    '                    todoMap.set(correlationId, {',
+                                    '                if (!stateMap.has(correlationId)) {',
+                                    '                    stateMap.set(correlationId, {',
                                     '                        id: correlationId,',
                                     '                        correlationId,',
                                     '                        status: \'pending\',',
@@ -634,19 +652,26 @@ function getDefaultValue(field) {
 
                                 return caseString;
                             } else {
-                                // Remove todo on AccountCreated event (correlation by customerId)
-                        log(`    No matching readmodel with todoList:true for dep:`, dep);
-                                return `            case ${eventType}EventName: {
-                const customerId = (event.data as any).customerId; // Assuming AccountCreated has customerId field
-                if (customerId && todoMap.has(customerId)) {
-                    todoMap.delete(customerId);
+                                // This shouldn't happen for inbound events
+                                return '';
+                            }
+                        }).filter(Boolean).join('\n');
+
+                        // Add case for Attempted event (marks todo as completed when command is dispatched)
+                        if (attemptedEventName) {
+                            evolveCases += `\n            case ${attemptedEventName}EventName: {
+                const correlationId = event.metadata?.correlation_id || event.streamId;
+                if (correlationId && stateMap.has(correlationId)) {
+                    stateMap.set(correlationId, { ...stateMap.get(correlationId), completed: true });
                 }
                 break;
             }`;
-                            }
-                        }).join('\n');
+                        }
 
                         const additionalFields = fields.map(f => `    ${f.name}: ${tsType(f)};`).join('\n    ');
+                        
+                        // Generate field assignments for rebuildTodos
+                        const fieldAssignments = fields.map(f => `                ${f.name}: state.${f.name} || ''`).join(',\n');
 
                         // Always export as get[ReadmodelName]TodoProjection for consistency
                         // Only append 'Todo' if not already present
@@ -660,6 +685,7 @@ function getDefaultValue(field) {
                             eventsList,
                             evolveCases,
                             additionalFields,
+                            fieldAssignments,
                             todoProjectionExportName: `get${todoReadmodelName}Projection`
                         });
 
@@ -667,8 +693,7 @@ function getDefaultValue(field) {
                         const processorFileName = `${todoReadmodelName}Processor.ts`;
                         const processorDestinationPath = `${sliceDir}/${processorFileName}`;
 
-                        // Find the command that the processor depends on (OUTBOUND COMMAND)
-                        const commandDeps = processor.dependencies.filter(dep => dep.type === 'OUTBOUND' && dep.elementType === 'COMMAND');
+                        // Use the commandDeps already found above to get command details
                         let commandType = '';
                         let commandPayload = '';
                         if (commandDeps.length > 0) {
@@ -685,10 +710,14 @@ function getDefaultValue(field) {
                             }
                         }
 
+                        // Get the first inbound event name for the processor to subscribe to
+                        const inboundEventName = inboundEvents.length > 0 ? eventTitle(inboundEvents[0]) : '';
+
                         this.fs.copyTpl(this.templatePath('processor.ts.tpl'), this.destinationPath(processorDestinationPath), {
                             readmodelName: todoReadmodelName,
                             commandType,
                             commandPayload,
+                            inboundEventName,
                             todoProjectionExportName: `get${todoReadmodelName}Projection`
                         });
                     }

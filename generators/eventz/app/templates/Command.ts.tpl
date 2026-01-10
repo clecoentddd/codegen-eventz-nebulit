@@ -16,7 +16,6 @@ export type <%= commandType %>Command = Command<<%= commandType %>CommandPayload
 <% } else { %>
 export type Command<T = any> = {
     streamId: string;
-    id: string;
     type: string;
     data: T;
     metadata?: {
