@@ -21,7 +21,7 @@ export type <%- readmodelName %>ReadModel = ProcessorTodoItem & {
 
 // Stateless query function - reads fresh from event store each time
 export async function <%- todoProjectionExportName %>(eventStore: EventStore): Promise<<%- readmodelName %>ReadModel[]> {
-    const events = await eventStore.getAllEvents() ?? [];
+    const events = await eventStore.getEvents('ONE_STREAM_ONLY') ?? [];
     
     // Map keyed by correlationId, value is a generic object to track workflow state
     const stateMap = new Map<string, Record<string, any>>();

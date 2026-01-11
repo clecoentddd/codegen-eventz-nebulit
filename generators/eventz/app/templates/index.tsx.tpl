@@ -1,4 +1,6 @@
 import Head from 'next/head';
+import Link from 'next/link';
+import Navigation from '../app/src/components/Navigation';
 
 export default function Home() {
   return (
@@ -9,12 +11,21 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <Navigation />
+
       <main>
         <h1>
           Welcome to your Eventz-generated Next.js app!
         </h1>
 
-        <p>
+        <nav style={{ margin: '2rem 0' }}>
+          <h2>Available Pages:</h2>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            <%- sliceLinks %>
+          </ul>
+        </nav>
+
+        <p style={{ marginTop: '2rem', color: '#666' }}>
           Get started by editing{' '}
           <code>pages/index.tsx</code>
         </p>

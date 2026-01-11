@@ -216,6 +216,29 @@ module.exports = class extends Generator {
 
         // Create components directory
         this.fs.write(this.destinationPath('app/src/components/.gitkeep'), '');
+        
+        // Generate Navigation component
+        this._writeNavigationComponent();
+    }
+
+    _writeNavigationComponent() {
+        this.log('---> _writeNavigationComponent: Generating Navigation component...');
+        const slices = this.globalConfig.slices || [];
+        const selectedSlices = this.answers.slices ? slices.filter(slice => this.answers.slices.includes(slice.title)) : slices;
+        
+        const navigationLinks = selectedSlices.map(slice => {
+            const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
+            const sliceTitle = slice.title.replace(/^slice:\s*/i, '');
+            return `<li><Link href="/${sliceSlug}" style={{ textDecoration: 'none', color: '#0070f3' }}>${sliceTitle}</Link></li>`;
+        }).join('\n        ');
+
+        this.fs.copyTpl(
+            this.templatePath('Navigation.tsx.tpl'),
+            this.destinationPath('app/src/components/Navigation.tsx'),
+            {
+                navigationLinks
+            }
+        );
     }
 
     _writingEvents() {
@@ -399,8 +422,9 @@ module.exports = class extends Generator {
         // Update index page with slice links
         const sliceLinks = selectedSlices.map(slice => {
             const sliceSlug = slugify(slice.title.replace(/^slice:/i, '')).toLowerCase();
-            return `<Link href="/${sliceSlug}"><a>${slice.title}</a></Link>`;
-        }).join('\n                    ');
+            const sliceTitle = slice.title.replace(/^slice:\s*/i, '');
+            return `<li style={{ margin: '0.5rem 0' }}><Link href="/${sliceSlug}">${sliceTitle}</Link></li>`;
+        }).join('\n            ');
 
         this.fs.copyTpl(
             this.templatePath('index.tsx.tpl'),
@@ -428,17 +452,20 @@ module.exports = class extends Generator {
                 const commandType = commandTitle(command);
                 return `import { ${commandType}UI } from '../app/src/slices/${sliceName}/ui/${commandType}UI';`;
             }).join('\n');
-            // Compose UI imports and components for screens
-            const screenUIs = (slice.screens || []).map(screen => {
-                const screenType = pascalCase(screen.title);
-                return `<${screenType} />`;
-            }).join('\n            ');
-            const screenImports = (slice.screens || []).map(screen => {
-                const screenType = pascalCase(screen.title);
-                return `import ${screenType} from '../app/src/slices/${sliceName}/ui/${screenType}';`;
-            }).join('\n');
-            const allUIs = [commandUIs, screenUIs].filter(Boolean).join('\n            ');
-            const allImports = [commandImports, screenImports].filter(Boolean).join('\n');
+            
+            // Compose UI imports and components for readmodels (for STATE_VIEW slices)
+            const readmodelUIs = slice.sliceType === 'STATE_VIEW' ? (slice.readmodels || []).map(readmodel => {
+                const readmodelName = pascalCase(readmodel.title);
+                return `<${readmodelName} />`;
+            }).join('\n            ') : '';
+            const readmodelImports = slice.sliceType === 'STATE_VIEW' ? (slice.readmodels || []).map(readmodel => {
+                const readmodelName = pascalCase(readmodel.title);
+                return `import ${readmodelName} from '../app/src/slices/${sliceName}/ui/${readmodelName}';`;
+            }).join('\n') : '';
+            
+            // Combine command and readmodel UIs
+            const allUIs = [commandUIs, readmodelUIs].filter(Boolean).join('\n            ');
+            const allImports = [commandImports, readmodelImports].filter(Boolean).join('\n');
             this.fs.copyTpl(
                 this.templatePath('page.tsx.tpl'),
                 this.destinationPath(pagePath),
@@ -456,14 +483,16 @@ module.exports = class extends Generator {
             (slice.commands || []).forEach(command => {
                 const commandType = commandTitle(command);
                 const commandSlug = slugify(command.title).toLowerCase();
-                // Build TypeScript type for form fields
-                const commandPayload = (command.fields || []).map(f => `${f.name}: ${tsType(f)}`).join('; ');
-                // Build default values for form fields
-                const commandPayloadDefaults = '{ ' + (command.fields || []).map(f => `${f.name}: ${getDefaultValue(f)}`).join(', ') + ' }';
+                // Filter out generated fields for UI
+                const nonGeneratedFields = (command.fields || []).filter(f => !f.generated);
+                // Build TypeScript type for form fields (only non-generated)
+                const commandPayload = nonGeneratedFields.map(f => `${f.name}: ${tsType(f)}`).join('; ');
+                // Build default values for form fields (only non-generated)
+                const commandPayloadDefaults = '{ ' + nonGeneratedFields.map(f => `${f.name}: ${getDefaultValue(f)}`).join(', ') + ' }';
                 // Build a user-friendly command title
                 const commandTitleStr = command.title || commandType;
-                // Build form fields JSX
-                const formFields = generateFormFields(command.fields || []);
+                // Build form fields JSX - exclude generated fields
+                const formFields = generateFormFields(nonGeneratedFields);
                 this.fs.copyTpl(
                     this.templatePath('commandUI.tsx.tpl'),
                     this.destinationPath(`${uiDir}/${commandType}UI.tsx`),
@@ -478,6 +507,25 @@ module.exports = class extends Generator {
                     }
                 );
             });
+            
+            // Generate UI files for readmodels (for STATE_VIEW slices)
+            if (slice.sliceType === 'STATE_VIEW') {
+                (slice.readmodels || []).forEach(readmodel => {
+                    const readmodelName = pascalCase(readmodel.title);
+                    const apiSlug = slugify(readmodel.title).toLowerCase();
+                    const readmodelTitle = readmodel.title || readmodelName;
+                    
+                    this.fs.copyTpl(
+                        this.templatePath('screen.tsx.tpl'),
+                        this.destinationPath(`${uiDir}/${readmodelName}.tsx`),
+                        {
+                            screenName: readmodelName,
+                            screenTitle: readmodelTitle,
+                            apiSlug
+                        }
+                    );
+                });
+            }
 // Helper for default values in UI forms
 function getDefaultValue(field) {
     const type = (field.type || '').toLowerCase();
@@ -488,34 +536,35 @@ function getDefaultValue(field) {
     return 'null';
 }
 
-            // Generate UI files for screens
-            (slice.screens || []).forEach(screen => {
-                const screenType = pascalCase(screen.title);
-                const screenName = screenType;
-                const screenTitle = screen.title || screenType;
-                
-                // Find the readmodel this screen depends on (INBOUND dependency)
-                const readmodelDep = (screen.dependencies || []).find(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
-                let apiSlug = slugify(screen.title).toLowerCase(); // default to screen's own slug
-                if (readmodelDep) {
-                    const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === readmodelDep.id);
-                    if (readmodel) {
-                        apiSlug = slugify(readmodel.title).toLowerCase();
-                    }
-                }
-                
-                this.fs.copyTpl(
-                    this.templatePath('screen.tsx.tpl'),
-                    this.destinationPath(`${uiDir}/${screenType}.tsx`),
-                    {
-                        screenType,
-                        screenName,
-                        apiSlug,
-                        screenTitle,
-                        screen
-                    }
-                );
-            });
+            // Generate UI files for screens - DISABLED
+            // Screens are redundant with readmodel lists
+            // (slice.screens || []).forEach(screen => {
+            //     const screenType = pascalCase(screen.title);
+            //     const screenName = screenType;
+            //     const screenTitle = screen.title || screenType;
+            //     
+            //     // Find the readmodel this screen depends on (INBOUND dependency)
+            //     const readmodelDep = (screen.dependencies || []).find(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL');
+            //     let apiSlug = slugify(screen.title).toLowerCase(); // default to screen's own slug
+            //     if (readmodelDep) {
+            //         const readmodel = this.globalConfig.slices.flatMap(s => s.readmodels).find(rm => rm.id === readmodelDep.id);
+            //         if (readmodel) {
+            //             apiSlug = slugify(readmodel.title).toLowerCase();
+            //         }
+            //     }
+            //     
+            //     this.fs.copyTpl(
+            //         this.templatePath('screen.tsx.tpl'),
+            //         this.destinationPath(`${uiDir}/${screenType}.tsx`),
+            //         {
+            //             screenType,
+            //             screenName,
+            //             apiSlug,
+            //             screenTitle,
+            //             screen
+            //         }
+            //     );
+            // });
         });
     }
 
@@ -744,44 +793,45 @@ function getDefaultValue(field) {
     }
 
     _writeScreenPages() {
-        this.log('---> _writeScreenPages: Generating pages for screens...');
-        const slices = this.globalConfig.slices || [];
-        slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
-            (slice.screens || []).forEach(screen => {
-                const screenSlug = slugify(screen.title).toLowerCase();
-                const readmodelDeps = (screen.dependencies || [])
-                    .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL')
-                    .map(dep => (this.globalConfig.slices || []).flatMap(s => s.readmodels).find(rm => rm.id === dep.id))
-                    .filter(Boolean);
+        // DISABLED: Screen pages are redundant with readmodel lists
+        // this.log('---> _writeScreenPages: Generating pages for screens...');
+        // const slices = this.globalConfig.slices || [];
+        // slices.filter(slice => slice.sliceType === 'STATE_VIEW').forEach(slice => {
+        //     (slice.screens || []).forEach(screen => {
+        //         const screenSlug = slugify(screen.title).toLowerCase();
+        //         const readmodelDeps = (screen.dependencies || [])
+        //             .filter(dep => dep.type === 'INBOUND' && dep.elementType === 'READMODEL')
+        //             .map(dep => (this.globalConfig.slices || []).flatMap(s => s.readmodels).find(rm => rm.id === dep.id))
+        //             .filter(Boolean);
 
-                if (readmodelDeps.length > 0) {
-                    const readmodel = readmodelDeps[0]; // Assume one readmodel per screen
-                    const apiSlug = slugify(readmodel.title).toLowerCase();
-                    const screenName = pascalCase(screen.title);
+        //         if (readmodelDeps.length > 0) {
+        //             const readmodel = readmodelDeps[0]; // Assume one readmodel per screen
+        //             const apiSlug = slugify(readmodel.title).toLowerCase();
+        //             const screenName = pascalCase(screen.title);
 
-                    this.fs.copyTpl(this.templatePath('screen.tsx.tpl'), this.destinationPath(`pages/${screenSlug}.tsx`), {
-                        screenName,
-                        screenTitle: screen.title,
-                        apiSlug
-                    });
-                }
-            });
-        });
+        //             this.fs.copyTpl(this.templatePath('screen.tsx.tpl'), this.destinationPath(`pages/${screenSlug}.tsx`), {
+        //                 screenName,
+        //                 screenTitle: screen.title,
+        //                 apiSlug
+        //             });
+        //         }
+        //     });
+        // });
 
-        // Update index page with screen links
-        const screenLinks = slices.filter(slice => slice.sliceType === 'STATE_VIEW').flatMap(slice =>
-            (slice.screens || []).map(screen => {
-                const screenSlug = slugify(screen.title).toLowerCase();
-                return `<Link href="/${screenSlug}"><a>${screen.title}</a></Link>`;
-            })
-        ).join('\n                    ');
+        // // Update index page with screen links
+        // const screenLinks = slices.filter(slice => slice.sliceType === 'STATE_VIEW').flatMap(slice =>
+        //     (slice.screens || []).map(screen => {
+        //         const screenSlug = slugify(screen.title).toLowerCase();
+        //         return `<Link href="/${screenSlug}"><a>${screen.title}</a></Link>`;
+        //     })
+        // ).join('\n                    ');
 
-        const currentIndexContent = this.fs.read(this.destinationPath('pages/index.tsx'));
-        const updatedIndexContent = currentIndexContent.replace(
-            /(<Link href="\/[^"]+"><a>[^<]+<\/a><\/Link>\n                    )+/g,
-            `$&${screenLinks}\n                    `
-        );
-        this.fs.write(this.destinationPath('pages/index.tsx'), updatedIndexContent);
+        // const currentIndexContent = this.fs.read(this.destinationPath('pages/index.tsx'));
+        // const updatedIndexContent = currentIndexContent.replace(
+        //     /(<Link href="\/[^"]+"><a>[^<]+<\/a><\/Link>\n                    )+/g,
+        //     `$&${screenLinks}\n                    `
+        // );
+        // this.fs.write(this.destinationPath('pages/index.tsx'), updatedIndexContent);
     }
 
     _writeSupabaseSetup() {
