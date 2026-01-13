@@ -17,19 +17,19 @@
         "title": "Admin Connecté",
         "fields": [
           {
-            "name": "adminEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "connectionId",
+            "type": "UUID",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "connectionId",
-            "generated": true,
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "adminEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           }
         ],
         "type": "COMMAND",
@@ -71,15 +71,15 @@
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": true
           },
           {
             "name": "adminEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -123,11 +123,11 @@
         "fields": [
           {
             "name": "adminEmail",
-            "generated": true,
-            "idAttribute": true,
             "type": "String",
+            "generated": true,
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           }
         ],
         "type": "SCREEN",
@@ -180,15 +180,15 @@
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": true
           },
           {
             "name": "adminEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -246,23 +246,23 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseNom",
-            "idAttribute": true,
             "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -304,23 +304,23 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseNom",
-            "idAttribute": true,
             "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -367,25 +367,25 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
             "name": "entrepriseNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -438,25 +438,25 @@
         "title": "retrouvée",
         "fields": [
           {
-            "name": "connectionId",
-            "type": "UUID",
-            "cardinality": "Single",
-            "subfields": [],
-            "idAttribute": false
-          },
-          {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseNom",
-            "idAttribute": true,
             "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
+          },
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "subfields": [],
+            "cardinality": "Single",
+            "idAttribute": false
           }
         ],
         "type": "READMODEL",
@@ -465,15 +465,15 @@
         "aggregateDependencies": [],
         "dependencies": [
           {
-            "id": "3458764655199619302",
-            "type": "OUTBOUND",
-            "title": "Liste des entreprises",
-            "elementType": "SCREEN"
-          },
-          {
             "id": "3458764655201670792",
             "type": "OUTBOUND",
             "title": "screen",
+            "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655199619302",
+            "type": "OUTBOUND",
+            "title": "Liste des entreprises",
             "elementType": "SCREEN"
           },
           {
@@ -504,23 +504,23 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseNom",
-            "idAttribute": true,
             "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "connectionId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -555,24 +555,24 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
-            "generated": true,
             "type": "String",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseNom",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -628,25 +628,25 @@
         "title": "Prepare Invitation",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
-            "cardinality": "Single",
+            "name": "clientEmail",
+            "type": "String",
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -687,25 +687,25 @@
         "title": "Invitation Préparé",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
-            "cardinality": "Single",
+            "name": "clientEmail",
+            "type": "String",
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -749,24 +749,24 @@
         "fields": [
           {
             "name": "entrepriseId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
-            "generated": true,
             "type": "String",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseNom",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -824,25 +824,25 @@
         "title": "invitation à envoyer",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
-            "cardinality": "Single",
+            "name": "clientEmail",
+            "type": "String",
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -852,16 +852,16 @@
         "aggregateDependencies": [],
         "dependencies": [
           {
-            "id": "3458764655205092590",
-            "type": "OUTBOUND",
-            "title": "processor SMTP",
-            "elementType": "AUTOMATION"
-          },
-          {
             "id": "3458764655208333180",
             "type": "OUTBOUND",
             "title": "Création du Compte",
             "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655205092590",
+            "type": "OUTBOUND",
+            "title": "processor SMTP",
+            "elementType": "AUTOMATION"
           },
           {
             "id": "3458764655201409520",
@@ -890,24 +890,24 @@
         "title": "Création du Compte",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -949,7 +949,7 @@
     "id": "3458764655206204163",
     "status": "Created",
     "index": 13,
-    "title": "slice: Invitation Envoyée",
+    "title": "slice: processor SMTP",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
@@ -959,29 +959,29 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Invitation Envoyée",
+        "slice": "slice: processor SMTP",
         "title": "Marquer Email Envoyé",
         "fields": [
           {
             "name": "clientId",
-            "idAttribute": true,
             "type": "UUID",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1018,29 +1018,29 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Invitation Envoyée",
+        "slice": "slice: processor SMTP",
         "title": "Invitation Envoyée",
         "fields": [
           {
             "name": "clientId",
-            "idAttribute": true,
             "type": "UUID",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1076,29 +1076,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Invitation Envoyée",
+        "slice": "slice: processor SMTP",
         "title": "processor SMTP",
         "fields": [
           {
             "name": "clientId",
-            "idAttribute": true,
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
-            "generated": true
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1137,7 +1136,7 @@
     "id": "3458764655208333450",
     "status": "Created",
     "index": 15,
-    "title": "slice: Client Créé",
+    "title": "slice: Client Création Compte",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
@@ -1147,28 +1146,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Créé",
+        "slice": "slice: Client Création Compte",
         "title": "Créer Compte",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1205,28 +1204,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Créé",
+        "slice": "slice: Client Création Compte",
         "title": "Client Créé",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1265,28 +1264,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Créé",
+        "slice": "slice: Client Création Compte",
         "title": "Création du Compte",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1328,7 +1327,7 @@
     "id": "3458764655210233471",
     "status": "Created",
     "index": 17,
-    "title": "slice: client authentifié",
+    "title": "slice: client à authentifié",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_VIEW",
     "commands": [],
@@ -1340,28 +1339,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: client authentifié",
+        "slice": "slice: client à authentifié",
         "title": "client authentifié",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1404,7 +1403,7 @@
     "id": "3458764655210105415",
     "status": "Created",
     "index": 19,
-    "title": "slice: Client Authentifié",
+    "title": "slice: Client Authentification Auth0",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
@@ -1414,28 +1413,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Authentifié",
+        "slice": "slice: Client Authentification Auth0",
         "title": "Client Authentifié",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1472,28 +1471,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Authentifié",
+        "slice": "slice: Client Authentification Auth0",
         "title": "Client Authentifié",
         "fields": [
           {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
+            "name": "clientId",
+            "type": "UUID",
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
+            "name": "clientEmail",
+            "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1506,6 +1505,12 @@
             "id": "3458764655215127325",
             "type": "OUTBOUND",
             "title": "projet à récupérer",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655236170107",
+            "type": "OUTBOUND",
+            "title": "facture à récupérer",
             "elementType": "READMODEL"
           },
           {
@@ -1535,28 +1540,28 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Client Authentifié",
+        "slice": "slice: Client Authentification Auth0",
         "title": "processor Auth0",
         "fields": [
           {
             "name": "clientId",
-            "idAttribute": true,
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "clientEmail",
             "type": "String",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1611,17 +1616,17 @@
         "title": "projet à récupérer",
         "fields": [
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
-            "cardinality": "Single",
-            "subfields": []
-          },
-          {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
+            "idAttribute": true
+          },
+          {
+            "name": "clientId",
+            "type": "UUID",
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1664,7 +1669,7 @@
     "id": "3458764655215886148",
     "status": "Created",
     "index": 23,
-    "title": "slice: Projet Récupéré",
+    "title": "slice: Projet Récupération API boond",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
@@ -1674,30 +1679,30 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupéré",
-        "title": "Projet Récupéré",
+        "slice": "slice: Projet Récupération API boond",
+        "title": "Marquer Projet Récupéré",
         "fields": [
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
+            "idAttribute": true
+          },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
-            "idAttribute": false
-          },
-          {
-            "name": "projetId",
-            "generated": true,
-            "idAttribute": true,
-            "type": "UUID",
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "projetNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1734,30 +1739,30 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupéré",
+        "slice": "slice: Projet Récupération API boond",
         "title": "Projet Récupéré",
         "fields": [
           {
-            "name": "entrepriseId",
+            "name": "projetId",
             "type": "UUID",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "projetId",
-            "generated": true,
-            "idAttribute": true,
+            "name": "entrepriseId",
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "projetNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1775,7 +1780,7 @@
           {
             "id": "3458764655215127321",
             "type": "INBOUND",
-            "title": "Projet Récupéré",
+            "title": "Marquer Projet Récupéré",
             "elementType": "COMMAND"
           }
         ],
@@ -1799,37 +1804,37 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupéré",
+        "slice": "slice: Projet Récupération API boond",
         "title": "processor boond API projets",
         "fields": [
           {
-            "name": "clientId",
-            "idAttribute": true,
-            "type": "UUID",
-            "cardinality": "Single",
-            "subfields": []
-          },
-          {
             "name": "projetId",
-            "generated": true,
-            "idAttribute": true,
             "type": "UUID",
+            "generated": true,
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
+            "idAttribute": true
+          },
+          {
+            "name": "clientId",
+            "type": "UUID",
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "projetNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1841,7 +1846,7 @@
           {
             "id": "3458764655215127321",
             "type": "OUTBOUND",
-            "title": "Projet Récupéré",
+            "title": "Marquer Projet Récupéré",
             "elementType": "COMMAND"
           },
           {
@@ -1868,7 +1873,7 @@
     "id": "3458764655215886781",
     "status": "Created",
     "index": 25,
-    "title": "slice: projet récupéré",
+    "title": "slice: projet récupéré depuis Boond",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_VIEW",
     "commands": [],
@@ -1880,30 +1885,30 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: projet récupéré",
+        "slice": "slice: projet récupéré depuis Boond",
         "title": "projet récupéré",
         "fields": [
           {
-            "name": "entrepriseId",
+            "name": "projetId",
             "type": "UUID",
-            "cardinality": "Single",
+            "generated": true,
             "subfields": [],
-            "idAttribute": false
+            "cardinality": "Single",
+            "idAttribute": true
           },
           {
-            "name": "projetId",
-            "generated": true,
-            "idAttribute": true,
+            "name": "entrepriseId",
             "type": "UUID",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": false
           },
           {
             "name": "projetNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1942,30 +1947,30 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: projet récupéré",
+        "slice": "slice: projet récupéré depuis Boond",
         "title": "Projets depuis Boond",
         "fields": [
           {
             "name": "projetId",
-            "generated": true,
-            "idAttribute": true,
             "type": "UUID",
+            "generated": true,
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "projetNom",
             "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
             "generated": true,
+            "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -1978,6 +1983,385 @@
             "id": "3458764655215457513",
             "type": "INBOUND",
             "title": "projet récupéré",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655236655350",
+    "status": "Created",
+    "index": 27,
+    "title": "slice: facture A récupérer",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655236170107",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: facture A récupérer",
+        "title": "facture à récupérer",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": true
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655236170093",
+            "type": "OUTBOUND",
+            "title": "processor boond API Factures",
+            "elementType": "AUTOMATION"
+          },
+          {
+            "id": "3458764655209448179",
+            "type": "INBOUND",
+            "title": "Client Authentifié",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655236861413",
+    "status": "Created",
+    "index": 29,
+    "title": "slice: Facture Récupérée",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655236170101",
+        "tags": [],
+        "modelContext": "Portail Client Simplifié",
+        "slice": "slice: Facture Récupérée",
+        "title": " Facture Récupérée",
+        "fields": [
+          {
+            "name": "factureId",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655235354014",
+            "type": "OUTBOUND",
+            "title": "Facture Récupérée",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655236170093",
+            "type": "INBOUND",
+            "title": "processor boond API Factures",
+            "elementType": "AUTOMATION"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655235354014",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Facture Récupérée",
+        "title": "Facture Récupérée",
+        "fields": [
+          {
+            "name": "factureId",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655236655032",
+            "type": "OUTBOUND",
+            "title": "facture récupérée",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655236170101",
+            "type": "INBOUND",
+            "title": " Facture Récupérée",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [
+      {
+        "id": "3458764655236170093",
+        "tags": [],
+        "groupId": "3458764655236170100",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Facture Récupérée",
+        "title": "processor boond API Factures",
+        "fields": [
+          {
+            "name": "factureId",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "AUTOMATION",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655236170101",
+            "type": "OUTBOUND",
+            "title": " Facture Récupérée",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655236170107",
+            "type": "INBOUND",
+            "title": "facture à récupérer",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655237142390",
+    "status": "Created",
+    "index": 31,
+    "title": "slice: facture récupérée",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655236655032",
+        "tags": [],
+        "modelContext": "Portail Client Simplifié",
+        "slice": "slice: facture récupérée",
+        "title": "facture récupérée",
+        "fields": [
+          {
+            "name": "factureId",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655236655044",
+            "type": "OUTBOUND",
+            "title": "Factures depuis boond",
+            "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655235354014",
+            "type": "INBOUND",
+            "title": "Facture Récupérée",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [
+      {
+        "id": "3458764655236655044",
+        "tags": [],
+        "groupId": "3458764655236655049",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: facture récupérée",
+        "title": "Factures depuis boond",
+        "fields": [
+          {
+            "name": "factureId",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655236655032",
+            "type": "INBOUND",
+            "title": "facture récupérée",
             "elementType": "READMODEL"
           }
         ],
