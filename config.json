@@ -1,1 +1,1072 @@
-{"slices":[{"id":"3458764653655010688","status":"Created","index":1,"title":"slice: Customercreate","context":"EventzCodeGen","sliceType":"STATE_CHANGE","commands":[{"id":"3458764653655010592","tags":[],"elementContext":"INTERNAL","modelContext":"EventzCodeGen","context":"INTERNAL","slice":"slice: Customercreate","title":"Customercreate","fields":[{"name":"customerId","idAttribute":true,"type":"UUID","cardinality":"Single","subfields":[],"generated":true},{"name":"customerName","generated":true,"idAttribute":true,"type":"String","cardinality":"Single","subfields":[]}],"type":"COMMAND","description":"","aggregate":"default","aggregateDependencies":[],"dependencies":[{"id":"3458764653655010215","type":"OUTBOUND","title":"CustomerCreated","elementType":"EVENT"},{"id":"3458764653655010607","type":"INBOUND","title":"screen Customer Creation","elementType":"SCREEN"}],"createsAggregate":false,"triggers":[],"sketched":false,"prototype":{"activeByDefault":false}}],"events":[{"id":"3458764653655010215","tags":[],"elementContext":"INTERNAL","modelContext":"EventzCodeGen","context":"INTERNAL","slice":"slice: Customercreate","title":"CustomerCreated","fields":[{"name":"customerId","idAttribute":true,"type":"UUID","cardinality":"Single","subfields":[]},{"name":"customerName","generated":true,"idAttribute":true,"type":"String","cardinality":"Single","subfields":[]}],"type":"EVENT","description":"","aggregate":"default","aggregateDependencies":[],"dependencies":[{"id":"3458764653655010592","type":"INBOUND","title":"Customercreate","elementType":"COMMAND"}],"createsAggregate":false,"triggers":[],"sketched":false,"prototype":{"activeByDefault":false}}],"readmodels":[],"screens":[{"id":"3458764653655010607","tags":[],"groupId":"3458764653655010624","elementContext":"INTERNAL","modelContext":"EventzCodeGen","context":"INTERNAL","slice":"slice: Customercreate","title":"screen Customer Creation","fields":[{"name":"customerName","generated":true,"idAttribute":true,"type":"String","cardinality":"Single","subfields":[]}],"type":"SCREEN","description":"","aggregate":"default","aggregateDependencies":[],"dependencies":[{"id":"3458764653655010592","type":"OUTBOUND","title":"Customercreate","elementType":"COMMAND"}],"createsAggregate":false,"triggers":[],"sketched":false,"prototype":{"activeByDefault":false}}],"screenImages":[],"screenLayouts":[],"processors":[],"tables":[],"specifications":[],"actors":[],"aggregates":[]}],"flows":[],"aggregates":[],"actors":[],"context":"EventzCodeGen","codeGen":{"application":"Context"},"boardId":"uXjVIKUE2jo=","sliceGroups":[],"sliceImages":[],"sliceLayouts":[]}
+[
+  {
+    "id": "3458764655198052687",
+    "status": "Created",
+    "index": 1,
+    "title": "slice: Admin Connection",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655197109765",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Admin Connection",
+        "title": "Admin Connecté",
+        "fields": [
+          {
+            "name": "adminEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "connectionId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655196916717",
+            "type": "OUTBOUND",
+            "title": "Admin Connecté",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655197109773",
+            "type": "INBOUND",
+            "title": "Admin Connection",
+            "elementType": "SCREEN"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655196916717",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Admin Connection",
+        "title": "Admin Connecté",
+        "fields": [
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": true
+          },
+          {
+            "name": "adminEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655197836364",
+            "type": "OUTBOUND",
+            "title": "Admin Connection",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655197109765",
+            "type": "INBOUND",
+            "title": "Admin Connecté",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [
+      {
+        "id": "3458764655197109773",
+        "tags": [],
+        "groupId": "3458764655197109778",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Admin Connection",
+        "title": "Admin Connection",
+        "fields": [
+          {
+            "name": "adminEmail",
+            "generated": true,
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655197109765",
+            "type": "OUTBOUND",
+            "title": "Admin Connecté",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655198348135",
+    "status": "Created",
+    "index": 3,
+    "title": "slice: Admin Connecté",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655197836364",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Admin Connecté",
+        "title": "Admin Connection",
+        "fields": [
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": true
+          },
+          {
+            "name": "adminEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655197836357",
+            "type": "OUTBOUND",
+            "title": "processor",
+            "elementType": "AUTOMATION"
+          },
+          {
+            "id": "3458764655196916717",
+            "type": "INBOUND",
+            "title": "Admin Connecté",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655198348005",
+    "status": "Created",
+    "index": 5,
+    "title": "slice: Entreprise A Retrouver API",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655197836360",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Entreprise A Retrouver API",
+        "title": "Entreprise Retrouvée",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseNom",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655197655535",
+            "type": "OUTBOUND",
+            "title": "Entreprise retrouvée",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655197836357",
+            "type": "INBOUND",
+            "title": "processor",
+            "elementType": "AUTOMATION"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655197655535",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Entreprise A Retrouver API",
+        "title": "Entreprise retrouvée",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseNom",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655199619288",
+            "type": "OUTBOUND",
+            "title": "retrouvée",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655197836360",
+            "type": "INBOUND",
+            "title": "Entreprise Retrouvée",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [
+      {
+        "id": "3458764655197836357",
+        "tags": [],
+        "groupId": "3458764655197836359",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Entreprise A Retrouver API",
+        "title": "processor",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "entrepriseNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          },
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "AUTOMATION",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655197836360",
+            "type": "OUTBOUND",
+            "title": "Entreprise Retrouvée",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655197836364",
+            "type": "INBOUND",
+            "title": "Admin Connection",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655199619442",
+    "status": "Created",
+    "index": 7,
+    "title": "slice: Liste des entreprises",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655199619288",
+        "tags": [],
+        "modelContext": "Portail Client Simplifié",
+        "slice": "slice: Liste des entreprises",
+        "title": "retrouvée",
+        "fields": [
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseNom",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655199619302",
+            "type": "OUTBOUND",
+            "title": "Liste des entreprises",
+            "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655201670792",
+            "type": "OUTBOUND",
+            "title": "screen",
+            "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655197655535",
+            "type": "INBOUND",
+            "title": "Entreprise retrouvée",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [
+      {
+        "id": "3458764655199619302",
+        "tags": [],
+        "groupId": "3458764655199619305",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Liste des entreprises",
+        "title": "Liste des entreprises",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseNom",
+            "idAttribute": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "connectionId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655199619288",
+            "type": "INBOUND",
+            "title": "retrouvée",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      },
+      {
+        "id": "3458764655201670792",
+        "tags": [],
+        "groupId": "3458764655201670799",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Liste des entreprises",
+        "title": "screen",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "clientEmail",
+            "generated": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655201670712",
+            "type": "OUTBOUND",
+            "title": "Prepare Invitation",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655199619288",
+            "type": "INBOUND",
+            "title": "retrouvée",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655204083357",
+    "status": "Created",
+    "index": 9,
+    "title": "slice: Prepare Invitation",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655201670712",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Prepare Invitation",
+        "title": "Prepare Invitation",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655201409520",
+            "type": "OUTBOUND",
+            "title": "Invitation Préparé",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655201670792",
+            "type": "INBOUND",
+            "title": "screen",
+            "elementType": "SCREEN"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655201409520",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Prepare Invitation",
+        "title": "Invitation Préparé",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655205092609",
+            "type": "OUTBOUND",
+            "title": "invitation à envoyer",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655201670712",
+            "type": "INBOUND",
+            "title": "Prepare Invitation",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [
+      {
+        "id": "3458764655201670792",
+        "tags": [],
+        "groupId": "3458764655201670799",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Prepare Invitation",
+        "title": "screen",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "clientEmail",
+            "generated": true,
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655201670712",
+            "type": "OUTBOUND",
+            "title": "Prepare Invitation",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655199619288",
+            "type": "INBOUND",
+            "title": "retrouvée",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655205663463",
+    "status": "Created",
+    "index": 11,
+    "title": "slice: invitation à envoyer",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655205092609",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: invitation à envoyer",
+        "title": "invitation à envoyer",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655205092590",
+            "type": "OUTBOUND",
+            "title": "processor SMTP",
+            "elementType": "AUTOMATION"
+          },
+          {
+            "id": "3458764655201409520",
+            "type": "INBOUND",
+            "title": "Invitation Préparé",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655206204163",
+    "status": "Created",
+    "index": 13,
+    "title": "slice: Invitation Envoyée",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655205092607",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Invitation Envoyée",
+        "title": "Marquer Email Envoyé",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655202114482",
+            "type": "OUTBOUND",
+            "title": "Invitation Envoyée",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655205092590",
+            "type": "INBOUND",
+            "title": "processor SMTP",
+            "elementType": "AUTOMATION"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655202114482",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Invitation Envoyée",
+        "title": "Invitation Envoyée",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655205092607",
+            "type": "INBOUND",
+            "title": "Marquer Email Envoyé",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [
+      {
+        "id": "3458764655205092590",
+        "tags": [],
+        "groupId": "3458764655205092606",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Invitation Envoyée",
+        "title": "processor SMTP",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true
+          },
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "AUTOMATION",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655205092607",
+            "type": "OUTBOUND",
+            "title": "Marquer Email Envoyé",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655205092609",
+            "type": "INBOUND",
+            "title": "invitation à envoyer",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  }
+]
