@@ -11,6 +11,10 @@ export const <%- commandType %>UI = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Prevent double submissions
+    if (loading) return;
+    
     setLoading(true);
     setMessage('');
     setIsError(false);
