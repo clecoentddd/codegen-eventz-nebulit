@@ -1745,7 +1745,6 @@
           {
             "name": "projetId",
             "type": "UUID",
-            "generated": true,
             "subfields": [],
             "cardinality": "Single",
             "idAttribute": true
@@ -1760,7 +1759,6 @@
           {
             "name": "projetNom",
             "type": "String",
-            "generated": true,
             "subfields": [],
             "cardinality": "Single",
             "idAttribute": false
@@ -2083,23 +2081,23 @@
         "fields": [
           {
             "name": "factureId",
-            "idAttribute": true,
             "type": "String",
+            "subfields": [],
             "cardinality": "Single",
-            "subfields": []
+            "idAttribute": true
           },
           {
             "name": "projetId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           },
           {
             "name": "entrepriseId",
             "type": "UUID",
-            "cardinality": "Single",
             "subfields": [],
+            "cardinality": "Single",
             "idAttribute": false
           }
         ],
@@ -2244,10 +2242,6 @@
             "elementType": "READMODEL"
           }
         ],
-        "listElement": false,
-        "todoList": false,
-        "apiEndpoint": "",
-        "service": null,
         "createsAggregate": false,
         "triggers": [],
         "sketched": false,
