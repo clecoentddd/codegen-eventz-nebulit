@@ -8,15 +8,24 @@ import { useEffect, useState } from 'react';
 export default function <%- screenName %>() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetch('/api/<%- apiSlug %>')
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to fetch data');
+                return res.json();
+            })
             .then(setData)
+            .catch(err => {
+                console.error(err);
+                setError('Failed to load data. Please try again.');
+            })
             .finally(() => setLoading(false));
     }, []);
 
     if (loading) return <div>Loading...</div>;
+    if (error) return <div className="alert alert-error" role="alert">{error}</div>;
 
     return (
         <div>

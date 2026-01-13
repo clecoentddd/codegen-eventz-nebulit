@@ -4,11 +4,13 @@ export const <%- commandType %>UI = () => {
   const [formData, setFormData] = useState<{ <%- commandPayload %> }>(<%- commandPayloadDefaults %>);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [isError, setIsError] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
+    setIsError(false);
 
     try {
       const response = await fetch('/api/<%= commandSlug %>', {
@@ -19,12 +21,16 @@ export const <%- commandType %>UI = () => {
 
       if (response.ok) {
         setMessage('Command submitted successfully!');
+        setIsError(false);
         setFormData(<%- commandPayloadDefaults %>);
       } else {
-        setMessage('Error submitting command.');
+        const errorData = await response.json().catch(() => ({}));
+        setMessage(errorData.message || 'Error submitting command.');
+        setIsError(true);
       }
     } catch (error) {
-      setMessage('Error submitting command.');
+      setMessage('Error submitting command. Please check your connection.');
+      setIsError(true);
       console.error(error);
     } finally {
       setLoading(false);
@@ -45,7 +51,11 @@ export const <%- commandType %>UI = () => {
           {loading ? 'Submitting...' : 'Submit'}
         </button>
       </form>
-      {message && <p>{message}</p>}
+      {message && (
+        <div className={`alert ${isError ? 'alert-error' : 'alert-success'}`} role="alert">
+          {message}
+        </div>
+      )}
     </div>
   );
 };

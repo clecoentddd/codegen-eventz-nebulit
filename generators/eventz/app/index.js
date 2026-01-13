@@ -203,6 +203,8 @@ module.exports = class extends Generator {
         this.fs.copy(this.templatePath('tsconfig.json.tpl'), this.destinationPath('tsconfig.json'));
         this.fs.copy(this.templatePath('next-env.d.ts.tpl'), this.destinationPath('next-env.d.ts'));
         this.fs.copy(this.templatePath('index.tsx.tpl'), this.destinationPath('pages/index.tsx'));
+        this.fs.copy(this.templatePath('_app.tsx.tpl'), this.destinationPath('pages/_app.tsx'));
+        this.fs.copy(this.templatePath('globals.css.tpl'), this.destinationPath('styles/globals.css'));
         this.fs.write(this.destinationPath('public/.gitkeep'), '');
         this.fs.write(this.destinationPath('pages/api/.gitkeep'), '');
 
