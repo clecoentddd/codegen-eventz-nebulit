@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import Badge from '../../../components/ui/Badge';
+import Button from '../../../components/ui/Button';
+import TextInput from '../../../components/ui/TextInput';
 
 export const <%- commandType %>UI = () => {
   const [formData, setFormData] = useState<{ <%- commandPayload %> }>(<%- commandPayloadDefaults %>);
@@ -43,16 +46,25 @@ export const <%- commandType %>UI = () => {
   };
 
   return (
-    <div className="command-ui">
-      <h3><%- commandTitle %></h3>
-      <form onSubmit={handleSubmit}>
+    <div className="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h3 className="text-lg font-semibold text-slate-900"><%- commandTitle %></h3>
+        <Badge variant="muted">Command</Badge>
+      </div>
+      <form onSubmit={handleSubmit} className="mt-4 grid gap-4">
 <%- formFields %>
-        <button type="submit" disabled={loading}>
+        <Button
+          type="submit"
+          disabled={loading}
+        >
           {loading ? 'Submitting...' : 'Submit'}
-        </button>
+        </Button>
       </form>
       {message && (
-        <div className={`alert ${isError ? 'alert-error' : 'alert-success'}`} role="alert">
+        <div
+          className={`mt-4 rounded-xl border px-4 py-3 text-sm ${isError ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
+          role="alert"
+        >
           {message}
         </div>
       )}
