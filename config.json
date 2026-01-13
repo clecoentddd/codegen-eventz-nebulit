@@ -824,19 +824,19 @@
         "title": "invitation à envoyer",
         "fields": [
           {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
             "name": "clientId",
             "idAttribute": true,
             "type": "UUID",
             "cardinality": "Single",
             "subfields": [],
             "generated": true
-          },
-          {
-            "name": "clientEmail",
-            "type": "String",
-            "cardinality": "Single",
-            "subfields": [],
-            "idAttribute": false
           },
           {
             "name": "entrepriseId",
@@ -858,6 +858,12 @@
             "elementType": "AUTOMATION"
           },
           {
+            "id": "3458764655208333180",
+            "type": "OUTBOUND",
+            "title": "Création du Compte",
+            "elementType": "SCREEN"
+          },
+          {
             "id": "3458764655201409520",
             "type": "INBOUND",
             "title": "Invitation Préparé",
@@ -872,7 +878,65 @@
         }
       }
     ],
-    "screens": [],
+    "screens": [
+      {
+        "id": "3458764655208333180",
+        "tags": [],
+        "groupId": "3458764655208333186",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: invitation à envoyer",
+        "title": "Création du Compte",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655208241866",
+            "type": "OUTBOUND",
+            "title": "Créer Compte",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655205092609",
+            "type": "INBOUND",
+            "title": "invitation à envoyer",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
     "screenImages": [],
     "screenLayouts": [],
     "processors": [],
@@ -1064,6 +1128,870 @@
         }
       }
     ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655208333450",
+    "status": "Created",
+    "index": 15,
+    "title": "slice: Client Créé",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655208241866",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Créé",
+        "title": "Créer Compte",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655208241144",
+            "type": "OUTBOUND",
+            "title": "Client Créé",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655208333180",
+            "type": "INBOUND",
+            "title": "Création du Compte",
+            "elementType": "SCREEN"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655208241144",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Créé",
+        "title": "Client Créé",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655209807863",
+            "type": "OUTBOUND",
+            "title": "client authentifié",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655208241866",
+            "type": "INBOUND",
+            "title": "Créer Compte",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [
+      {
+        "id": "3458764655208333180",
+        "tags": [],
+        "groupId": "3458764655208333186",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Créé",
+        "title": "Création du Compte",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655208241866",
+            "type": "OUTBOUND",
+            "title": "Créer Compte",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655205092609",
+            "type": "INBOUND",
+            "title": "invitation à envoyer",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655210233471",
+    "status": "Created",
+    "index": 17,
+    "title": "slice: client authentifié",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655209807863",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: client authentifié",
+        "title": "client authentifié",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655209807855",
+            "type": "OUTBOUND",
+            "title": "processor Auth0",
+            "elementType": "AUTOMATION"
+          },
+          {
+            "id": "3458764655208241144",
+            "type": "INBOUND",
+            "title": "Client Créé",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655210105415",
+    "status": "Created",
+    "index": 19,
+    "title": "slice: Client Authentifié",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655209807859",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Authentifié",
+        "title": "Client Authentifié",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655209448179",
+            "type": "OUTBOUND",
+            "title": "Client Authentifié",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655209807855",
+            "type": "INBOUND",
+            "title": "processor Auth0",
+            "elementType": "AUTOMATION"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655209448179",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Authentifié",
+        "title": "Client Authentifié",
+        "fields": [
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215127325",
+            "type": "OUTBOUND",
+            "title": "projet à récupérer",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655209807859",
+            "type": "INBOUND",
+            "title": "Client Authentifié",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [
+      {
+        "id": "3458764655209807855",
+        "tags": [],
+        "groupId": "3458764655209807858",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Client Authentifié",
+        "title": "processor Auth0",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "clientEmail",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "AUTOMATION",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655209807859",
+            "type": "OUTBOUND",
+            "title": "Client Authentifié",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655209807863",
+            "type": "INBOUND",
+            "title": "client authentifié",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655215718820",
+    "status": "Created",
+    "index": 21,
+    "title": "slice: projet à récupérer",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655215127325",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: projet à récupérer",
+        "title": "projet à récupérer",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215127306",
+            "type": "OUTBOUND",
+            "title": "processor boond API projets",
+            "elementType": "AUTOMATION"
+          },
+          {
+            "id": "3458764655209448179",
+            "type": "INBOUND",
+            "title": "Client Authentifié",
+            "elementType": "EVENT"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655215886148",
+    "status": "Created",
+    "index": 23,
+    "title": "slice: Projet Récupéré",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_CHANGE",
+    "commands": [
+      {
+        "id": "3458764655215127321",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Projet Récupéré",
+        "title": "Projet Récupéré",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "projetId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          }
+        ],
+        "type": "COMMAND",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655210664590",
+            "type": "OUTBOUND",
+            "title": "Projet Récupéré",
+            "elementType": "EVENT"
+          },
+          {
+            "id": "3458764655215127306",
+            "type": "INBOUND",
+            "title": "processor boond API projets",
+            "elementType": "AUTOMATION"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "3458764655210664590",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Projet Récupéré",
+        "title": "Projet Récupéré",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "projetId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          }
+        ],
+        "type": "EVENT",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215457513",
+            "type": "OUTBOUND",
+            "title": "projet récupéré",
+            "elementType": "READMODEL"
+          },
+          {
+            "id": "3458764655215127321",
+            "type": "INBOUND",
+            "title": "Projet Récupéré",
+            "elementType": "COMMAND"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "readmodels": [],
+    "screens": [],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [
+      {
+        "id": "3458764655215127306",
+        "tags": [],
+        "groupId": "3458764655215127320",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: Projet Récupéré",
+        "title": "processor boond API projets",
+        "fields": [
+          {
+            "name": "clientId",
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "projetNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          }
+        ],
+        "type": "AUTOMATION",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215127321",
+            "type": "OUTBOUND",
+            "title": "Projet Récupéré",
+            "elementType": "COMMAND"
+          },
+          {
+            "id": "3458764655215127325",
+            "type": "INBOUND",
+            "title": "projet à récupérer",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "tables": [],
+    "specifications": [],
+    "actors": [],
+    "aggregates": []
+  },
+  {
+    "id": "3458764655215886781",
+    "status": "Created",
+    "index": 25,
+    "title": "slice: projet récupéré",
+    "context": "Portail Client Simplifié",
+    "sliceType": "STATE_VIEW",
+    "commands": [],
+    "events": [],
+    "readmodels": [
+      {
+        "id": "3458764655215457513",
+        "tags": [],
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: projet récupéré",
+        "title": "projet récupéré",
+        "fields": [
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "projetId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "projetNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          }
+        ],
+        "type": "READMODEL",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215457544",
+            "type": "OUTBOUND",
+            "title": "Projets depuis Boond",
+            "elementType": "SCREEN"
+          },
+          {
+            "id": "3458764655210664590",
+            "type": "INBOUND",
+            "title": "Projet Récupéré",
+            "elementType": "EVENT"
+          }
+        ],
+        "listElement": true,
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screens": [
+      {
+        "id": "3458764655215457544",
+        "tags": [],
+        "groupId": "3458764655215457563",
+        "elementContext": "INTERNAL",
+        "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
+        "slice": "slice: projet récupéré",
+        "title": "Projets depuis Boond",
+        "fields": [
+          {
+            "name": "projetId",
+            "generated": true,
+            "idAttribute": true,
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": []
+          },
+          {
+            "name": "entrepriseId",
+            "type": "UUID",
+            "cardinality": "Single",
+            "subfields": [],
+            "idAttribute": false
+          },
+          {
+            "name": "projetNom",
+            "type": "String",
+            "cardinality": "Single",
+            "subfields": [],
+            "generated": true,
+            "idAttribute": false
+          }
+        ],
+        "type": "SCREEN",
+        "description": "",
+        "aggregate": "default",
+        "aggregateDependencies": [],
+        "dependencies": [
+          {
+            "id": "3458764655215457513",
+            "type": "INBOUND",
+            "title": "projet récupéré",
+            "elementType": "READMODEL"
+          }
+        ],
+        "createsAggregate": false,
+        "triggers": [],
+        "sketched": false,
+        "prototype": {
+          "activeByDefault": false
+        }
+      }
+    ],
+    "screenImages": [],
+    "screenLayouts": [],
+    "processors": [],
     "tables": [],
     "specifications": [],
     "actors": [],
