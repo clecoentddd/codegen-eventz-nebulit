@@ -332,7 +332,7 @@
           {
             "id": "3458764655199619288",
             "type": "OUTBOUND",
-            "title": "retrouvée",
+            "title": "Liste des entreprises depuis Boond",
             "elementType": "READMODEL"
           },
           {
@@ -433,9 +433,11 @@
       {
         "id": "3458764655199619288",
         "tags": [],
+        "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
+        "context": "INTERNAL",
         "slice": "slice: Liste des entreprises",
-        "title": "retrouvée",
+        "title": "Liste des entreprises depuis Boond",
         "fields": [
           {
             "name": "entrepriseId",
@@ -532,7 +534,7 @@
           {
             "id": "3458764655199619288",
             "type": "INBOUND",
-            "title": "retrouvée",
+            "title": "Liste des entreprises depuis Boond",
             "elementType": "READMODEL"
           }
         ],
@@ -590,7 +592,7 @@
           {
             "id": "3458764655199619288",
             "type": "INBOUND",
-            "title": "retrouvée",
+            "title": "Liste des entreprises depuis Boond",
             "elementType": "READMODEL"
           }
         ],
@@ -784,7 +786,7 @@
           {
             "id": "3458764655199619288",
             "type": "INBOUND",
-            "title": "retrouvée",
+            "title": "Liste des entreprises depuis Boond",
             "elementType": "READMODEL"
           }
         ],
@@ -1669,7 +1671,7 @@
     "id": "3458764655215886148",
     "status": "Created",
     "index": 23,
-    "title": "slice: Projet Récupération API boond",
+    "title": "slice: Projet Requête API boond",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
@@ -1679,13 +1681,12 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupération API boond",
+        "slice": "slice: Projet Requête API boond",
         "title": "Marquer Projet Récupéré",
         "fields": [
           {
             "name": "projetId",
             "type": "UUID",
-            "generated": true,
             "subfields": [],
             "cardinality": "Single",
             "idAttribute": true
@@ -1700,7 +1701,6 @@
           {
             "name": "projetNom",
             "type": "String",
-            "generated": true,
             "subfields": [],
             "cardinality": "Single",
             "idAttribute": false
@@ -1739,7 +1739,7 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupération API boond",
+        "slice": "slice: Projet Requête API boond",
         "title": "Projet Récupéré",
         "fields": [
           {
@@ -1804,7 +1804,7 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Projet Récupération API boond",
+        "slice": "slice: Projet Requête API boond",
         "title": "processor boond API projets",
         "fields": [
           {
@@ -2068,16 +2068,18 @@
     "id": "3458764655236861413",
     "status": "Created",
     "index": 29,
-    "title": "slice: Facture Récupérée",
+    "title": "slice: Requête Facture API Boond",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_CHANGE",
     "commands": [
       {
         "id": "3458764655236170101",
         "tags": [],
+        "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
-        "slice": "slice: Facture Récupérée",
-        "title": " Facture Récupérée",
+        "context": "INTERNAL",
+        "slice": "slice: Requête Facture API Boond",
+        "title": "Marquer Facture Récupérée",
         "fields": [
           {
             "name": "factureId",
@@ -2134,7 +2136,7 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Facture Récupérée",
+        "slice": "slice: Requête Facture API Boond",
         "title": "Facture Récupérée",
         "fields": [
           {
@@ -2173,7 +2175,7 @@
           {
             "id": "3458764655236170101",
             "type": "INBOUND",
-            "title": " Facture Récupérée",
+            "title": "Marquer Facture Récupérée",
             "elementType": "COMMAND"
           }
         ],
@@ -2197,7 +2199,7 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: Facture Récupérée",
+        "slice": "slice: Requête Facture API Boond",
         "title": "processor boond API Factures",
         "fields": [
           {
@@ -2232,7 +2234,7 @@
           {
             "id": "3458764655236170101",
             "type": "OUTBOUND",
-            "title": " Facture Récupérée",
+            "title": "Marquer Facture Récupérée",
             "elementType": "COMMAND"
           },
           {
@@ -2242,6 +2244,10 @@
             "elementType": "READMODEL"
           }
         ],
+        "listElement": false,
+        "todoList": false,
+        "apiEndpoint": "",
+        "service": null,
         "createsAggregate": false,
         "triggers": [],
         "sketched": false,
@@ -2259,7 +2265,7 @@
     "id": "3458764655237142390",
     "status": "Created",
     "index": 31,
-    "title": "slice: facture récupérée",
+    "title": "slice: Liste des factures depuis boond",
     "context": "Portail Client Simplifié",
     "sliceType": "STATE_VIEW",
     "commands": [],
@@ -2269,7 +2275,7 @@
         "id": "3458764655236655032",
         "tags": [],
         "modelContext": "Portail Client Simplifié",
-        "slice": "slice: facture récupérée",
+        "slice": "slice: Liste des factures depuis boond",
         "title": "facture récupérée",
         "fields": [
           {
@@ -2328,7 +2334,7 @@
         "elementContext": "INTERNAL",
         "modelContext": "Portail Client Simplifié",
         "context": "INTERNAL",
-        "slice": "slice: facture récupérée",
+        "slice": "slice: Liste des factures depuis boond",
         "title": "Factures depuis boond",
         "fields": [
           {
