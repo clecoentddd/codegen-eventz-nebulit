@@ -48,7 +48,7 @@ export class SupabaseEventStore implements EventStore {
             .from('events')
             .select('*')
             .eq('stream_id', id)
-            .order('version', { ascending: true });
+            .order('id', { ascending: true });
 
         if (error) {
             console.error('Error fetching events from Supabase:', error);
@@ -61,34 +61,19 @@ export class SupabaseEventStore implements EventStore {
     async appendEvents(streamId: string | undefined, events: Event[]): Promise<void> {
         const id = streamId || this.defaultStreamId;
 
-        // Fetch last version
-        const { data: existingEvents, error: fetchError } = await this.supabase
-            .from('events')
-            .select('version')
-            .eq('stream_id', id)
-            .order('version', { ascending: false })
-            .limit(1);
-
-        if (fetchError) {
-            console.error('Error fetching last event version:', fetchError);
-            throw new Error(`Supabase appendEvents fetch failed: ${fetchError.message}`);
-        }
-
-        let currentVersion = existingEvents && existingEvents.length > 0 ? existingEvents[0].version : 0;
-
+        // Prepare events for insert - no version assignment, DB handles ordering via id
         const records = events.map(event => ({
             stream_id: id,
             type: event.type,
-            version: ++currentVersion,
             data: event.data,
             metadata: event.metadata,
         }));
 
-        const { error: insertError } = await this.supabase.from('events').insert(records);
+        const { error } = await this.supabase.from('events').insert(records);
 
-        if (insertError) {
-            console.error('Error appending events to Supabase:', insertError);
-            throw new Error(`Supabase appendEvents insert failed: ${insertError.message}`);
+        if (error) {
+            console.error('Error appending events to Supabase:', error);
+            throw new Error(`Supabase appendEvents failed: ${error.message}`);
         }
     }
 
@@ -96,7 +81,7 @@ export class SupabaseEventStore implements EventStore {
         const { data, error } = await this.supabase
             .from('events')
             .select('*')
-            .order('version', { ascending: true });
+            .order('id', { ascending: true });
 
         if (error) {
             console.error('Error fetching all events from Supabase:', error);
