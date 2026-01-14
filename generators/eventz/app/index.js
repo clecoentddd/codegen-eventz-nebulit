@@ -4,7 +4,8 @@
  * Licensed under the MIT License.
  */
 
-var Generator = require("yeoman-generator");
+var GeneratorModule = require("yeoman-generator");
+var Generator = GeneratorModule.default || GeneratorModule;
 var slugify = require("slugify");
 
 // --- Helper Functions ---
@@ -307,6 +308,7 @@ module.exports = class extends Generator {
       "Card",
       "CardLink",
       "NavLinkPill",
+      "ReadmodelList",
       "TextInput",
     ];
     uiComponents.forEach((component) => {

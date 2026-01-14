@@ -5,6 +5,8 @@
 
 import { useEffect, useState } from 'react';
 
+import ReadmodelList from '../../../components/ui/ReadmodelList';
+
 export default function <%- screenName %>() {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,17 +26,15 @@ export default function <%- screenName %>() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div className="alert alert-error" role="alert">{error}</div>;
+    const description = 'Apercu des donnees.';
 
     return (
-        <div>
-            <h1><%- screenTitle %></h1>
-            <ul>
-                {data.map((item, index) => (
-                    <li key={index}>{JSON.stringify(item)}</li>
-                ))}
-            </ul>
-        </div>
+        <ReadmodelList
+            title="<%- screenTitle %>"
+            description={description}
+            items={data}
+            loading={loading}
+            error={error}
+        />
     );
 }
