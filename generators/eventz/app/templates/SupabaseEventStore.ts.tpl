@@ -33,7 +33,6 @@ export class SupabaseEventStore implements EventStore {
                 'Ensure you use a server-side environment variable for the service key.'
             );
         }
-
         // Initialize Supabase client
         this.supabase = createClient(url, key, { auth: { persistSession: false } });
 
@@ -61,10 +60,24 @@ export class SupabaseEventStore implements EventStore {
     async appendEvents(streamId: string | undefined, events: Event[]): Promise<void> {
         const id = streamId || this.defaultStreamId;
 
-        // Prepare events for insert - no version assignment, DB handles ordering via id
-        const records = events.map(event => ({
+        const { data: latest, error: latestError } = await this.supabase
+            .from('events')
+            .select('version')
+            .eq('stream_id', id)
+            .order('version', { ascending: false })
+            .limit(1);
+
+        if (latestError) {
+            console.error('Error fetching latest version from Supabase:', latestError);
+            throw new Error(`Supabase appendEvents failed: ${latestError.message}`);
+        }
+
+        const startVersion = (latest?.[0]?.version ?? 0) + 1;
+
+        const records = events.map((event, index) => ({
             stream_id: id,
             type: event.type,
+            version: startVersion + index,
             data: event.data,
             metadata: event.metadata,
         }));
