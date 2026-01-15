@@ -38,7 +38,22 @@ function tsType(field) {
     date: "Date",
     datetime: "Date",
   };
-  const baseType = typeMap[field.type.toLowerCase()] || "any";
+  
+  let baseType;
+  
+  // Handle Custom types with subfields
+  if (field.type.toLowerCase() === "custom" && field.subfields && field.subfields.length > 0) {
+    const subfieldTypes = field.subfields.map(subfield => {
+      const subType = typeMap[subfield.type.toLowerCase()] || "any";
+      const subIsList = subfield.cardinality && subfield.cardinality.toLowerCase() === "list";
+      const finalSubType = subIsList ? `Array<${subType}>` : subType;
+      return `${subfield.name}: ${finalSubType}`;
+    }).join("; ");
+    baseType = `{ ${subfieldTypes} }`;
+  } else {
+    baseType = typeMap[field.type.toLowerCase()] || "any";
+  }
+  
   const isList =
     field.cardinality && field.cardinality.toLowerCase() === "list";
   return isList ? `Array<${baseType}>` : baseType;
