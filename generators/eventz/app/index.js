@@ -948,6 +948,10 @@ module.exports = class extends Generator {
               .map((event, index) => {
                 const eventType = eventTitle(event);
                 const eventFields = event.fields || [];
+                
+                // Find the ID field (first non-generated field or idAttribute field)
+                const idField = eventFields.find(f => f.idAttribute) || eventFields.find(f => !f.generated) || eventFields[0];
+                const idFieldName = idField ? idField.name : 'id';
 
                 // First event adds todo
                 const isAddEvent = index === 0;
@@ -967,11 +971,11 @@ module.exports = class extends Generator {
 
                   const caseString = [
                     "            case " + eventType + "EventName: {",
-                    "                const correlationId = event.metadata?.correlation_id || event.streamId;",
-                    "                if (!stateMap.has(correlationId)) {",
-                    "                    stateMap.set(correlationId, {",
-                    "                        id: correlationId,",
-                    "                        correlationId,",
+                    `                const key = (event.data as any).${idFieldName}; // Use ${idFieldName} as unique key`,
+                    "                if (!stateMap.has(key)) {",
+                    "                    stateMap.set(key, {",
+                    "                        id: key,",
+                    "                        correlationId: key,",
                     "                        status: 'pending',",
                     "                        createdAt: new Date(Date.now()),",
                     "                        updatedAt: new Date(Date.now()),",
@@ -994,10 +998,16 @@ module.exports = class extends Generator {
 
             // Add case for Attempted event (marks todo as completed when command is dispatched)
             if (attemptedEventName) {
+              // Get the ID field from the first inbound event
+              const firstEvent = inboundEvents[0];
+              const eventFields = firstEvent.fields || [];
+              const idField = eventFields.find(f => f.idAttribute) || eventFields.find(f => !f.generated) || eventFields[0];
+              const idFieldName = idField ? idField.name : 'id';
+              
               evolveCases += `\n            case ${attemptedEventName}EventName: {
-                const correlationId = event.metadata?.correlation_id || event.streamId;
-                if (correlationId && stateMap.has(correlationId)) {
-                    stateMap.set(correlationId, { ...stateMap.get(correlationId), completed: true });
+                const key = (event.data as any).${idFieldName}; // Use ${idFieldName} from event data
+                if (key && stateMap.has(key)) {
+                    stateMap.set(key, { ...stateMap.get(key), completed: true });
                 }
                 break;
             }`;
