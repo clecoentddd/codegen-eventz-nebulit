@@ -23,8 +23,15 @@ function formatLabel(label: string) {
 
 function formatValue(value: unknown) {
   if (value === null || value === undefined) return '—';
-  if (Array.isArray(value)) return value.length ? value.join(', ') : '—';
-  if (typeof value === 'object') return JSON.stringify(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '—';
+    // Check if array contains objects
+    if (typeof value[0] === 'object' && value[0] !== null) {
+      return JSON.stringify(value, null, 2);
+    }
+    return value.join(', ');
+  }
+  if (typeof value === 'object') return JSON.stringify(value, null, 2);
   return String(value);
 }
 

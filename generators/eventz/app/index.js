@@ -170,6 +170,7 @@ module.exports = class extends Generator {
         type: "checkbox",
         name: "slices",
         choices: this.globalConfig.slices.map((it) => it.title),
+        pageSize: 20,
         loop: false,
         message: "Which Slice should be generated?",
         when: (givenAnswers) => {
