@@ -1,13 +1,31 @@
-import { useState } from 'react';
+import { useState<% if (hasMappedFields) { %>, useEffect<% } %> } from 'react';
 import Badge from '../../../components/ui/Badge';
 import Button from '../../../components/ui/Button';
 import TextInput from '../../../components/ui/TextInput';
+<% if (hasMappedFields) { %>import Select from '../../../components/ui/Select';<% } %>
 
 export const <%- commandType %>UI = () => {
   const [formData, setFormData] = useState<{ <%- commandPayload %> }>(<%- commandPayloadDefaults %>);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isError, setIsError] = useState(false);
+<% if (hasMappedFields) { %>
+  const [readmodelData, setReadmodelData] = useState<any>(null);
+  const [readmodelLoading, setReadmodelLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('<%- readmodelApiUrl %>')
+      .then(res => res.json())
+      .then(data => {
+        setReadmodelData(data);
+        setReadmodelLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to fetch readmodel data:', err);
+        setReadmodelLoading(false);
+      });
+  }, []);
+<% } %>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +62,7 @@ export const <%- commandType %>UI = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };

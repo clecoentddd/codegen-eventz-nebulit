@@ -102,12 +102,54 @@ function renderEventAssignment(event) {
 }
 
 // @ts-ignore
-function generateFormFields(nonGeneratedFields) {
-  return nonGeneratedFields
+function generateFormFields(allFields, mappingSourceField) {
+  return allFields
     .map((f) => {
+      const fieldName = f.name;
+      const isGenerated = f.generated === true;
+      
+      // If field is generated, render as read-only
+      if (isGenerated) {
+        const fieldType = f.type.toLowerCase() === "string" ? "text" : f.type.toLowerCase();
+        return (
+          "                <TextInput\n" +
+          '                    label="' + fieldName + ' (auto-generated)"\n' +
+          '                    type="' + fieldType + '"\n' +
+          '                    id="' + fieldName + '"\n' +
+          '                    name="' + fieldName + '"\n' +
+          "                    value={formData['" + fieldName + "']}\n" +
+          "                    onChange={handleChange}\n" +
+          "                    readOnly\n" +
+          "                    disabled\n" +
+          "                />\n"
+        );
+      }
+      
+      // If field has mapping attribute, generate a Select dropdown
+      if (f.mapping) {
+        return (
+          "                {readmodelLoading ? (\n" +
+          "                  <div className=\"text-sm text-slate-500\">Loading options...</div>\n" +
+          "                ) : (\n" +
+          "                  <Select\n" +
+          '                    label="' + fieldName + '"\n' +
+          '                    id="' + fieldName + '"\n' +
+          '                    name="' + fieldName + '"\n' +
+          "                    value={formData['" + fieldName + "']}\n" +
+          "                    onChange={handleChange}\n" +
+          "                    options={readmodelData && Array.isArray(readmodelData) && readmodelData.length > 0 && readmodelData[0]." + f.mapping + " ? readmodelData[0]." + f.mapping + ".map((item: any) => ({\n" +
+          "                      value: item.entrerpiseId || item.id,\n" +
+          "                      label: item.entrepriseNom || item.name || item.title || String(item)\n" +
+          "                    })) : []}\n" +
+          "                    required\n" +
+          "                  />\n" +
+          "                )}\n"
+        );
+      }
+      
+      // Otherwise, generate regular TextInput
       const fieldType =
         f.type.toLowerCase() === "string" ? "text" : f.type.toLowerCase();
-      const fieldName = f.name;
       return (
         "                <TextInput\n" +
         '                    label="' +
@@ -325,6 +367,7 @@ module.exports = class extends Generator {
       "CardLink",
       "NavLinkPill",
       "ReadmodelList",
+      "Select",
       "TextInput",
     ];
     uiComponents.forEach((component) => {
@@ -707,25 +750,63 @@ module.exports = class extends Generator {
       (slice.commands || []).forEach((command) => {
         const commandType = commandTitle(command);
         const commandSlug = slugify(command.title).toLowerCase();
-        // Filter out generated fields for UI
-        const nonGeneratedFields = (command.fields || []).filter(
-          (f) => !f.generated,
-        );
-        // Build TypeScript type for form fields (only non-generated)
-        const commandPayload = nonGeneratedFields
+        // Include all fields (generated ones will be read-only)
+        const allFields = command.fields || [];
+        const nonGeneratedFields = allFields.filter((f) => !f.generated);
+        
+        // Detect if any fields have mapping (for dropdown selects)
+        const hasMappedFields = allFields.some(f => f.mapping && !f.generated);
+        
+        // Find the readmodel API URL if there are mapped fields
+        let readmodelApiUrl = '';
+        if (hasMappedFields) {
+          // Find the screen that uses this command (OUTBOUND dependency to this command)
+          const screen = this.globalConfig.slices
+            .flatMap(s => s.screens || [])
+            .find(scr => (scr.dependencies || []).some(dep => 
+              dep.type === 'OUTBOUND' && 
+              dep.elementType === 'COMMAND' && 
+              dep.id === command.id
+            ));
+          
+          if (screen) {
+            // Find the readmodel this screen depends on (INBOUND dependency)
+            const readmodelDep = (screen.dependencies || []).find(dep => 
+              dep.type === 'INBOUND' && dep.elementType === 'READMODEL'
+            );
+            
+            if (readmodelDep) {
+              const readmodel = this.globalConfig.slices
+                .flatMap(s => s.readmodels || [])
+                .find(rm => rm.id === readmodelDep.id);
+              
+              if (readmodel) {
+                readmodelApiUrl = '/api/' + slugify(readmodel.title).toLowerCase();
+              }
+            }
+          }
+        }
+        
+        // Build TypeScript type for form fields (all fields)
+        const commandPayload = allFields
           .map((f) => `${f.name}: ${tsType(f)}`)
           .join("; ");
-        // Build default values for form fields (only non-generated)
+        // Build default values for form fields (all fields, generate UUIDs for generated UUID fields)
         const commandPayloadDefaults =
           "{ " +
-          nonGeneratedFields
-            .map((f) => `${f.name}: ${getDefaultValue(f)}`)
+          allFields
+            .map((f) => {
+              if (f.generated && f.type === 'UUID') {
+                return `${f.name}: crypto.randomUUID()`;
+              }
+              return `${f.name}: ${getDefaultValue(f)}`;
+            })
             .join(", ") +
           " }";
         // Build a user-friendly command title
         const commandTitleStr = command.title || commandType;
-        // Build form fields JSX - exclude generated fields
-        const formFields = generateFormFields(nonGeneratedFields);
+        // Build form fields JSX - include all fields (generated shown as read-only)
+        const formFields = generateFormFields(allFields, readmodelApiUrl);
         this.fs.copyTpl(
           this.templatePath("commandUI.tsx.tpl"),
           this.destinationPath(`${uiDir}/${commandType}UI.tsx`),
@@ -737,6 +818,8 @@ module.exports = class extends Generator {
             commandSlug,
             commandTitle: commandTitleStr,
             formFields,
+            hasMappedFields,
+            readmodelApiUrl,
           },
         );
       });
