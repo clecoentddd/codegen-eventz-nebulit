@@ -28,11 +28,11 @@ export const create<%= commandType %>CommandHandler = (eventStore: EventStore) =
 
         await eventStore.appendEvents(command.streamId, [attemptedEvent]);
 
-        // 2. Emit signal for processors/projections to wake up
-        await signalMock.emit('<%= commandType %>Attempted', attemptedEvent);
-
-        // 3. Publish to RabbitMQ for async command processing
+        // 2. Publish to RabbitMQ for async command processing
         await rabbitMQMock.publishToTopic('<%= commandType %>-queue', command);
+
+        // 3. Emit signal for processors/projections to wake up (after a small delay to avoid race conditions)
+        setImmediate(() => signalMock.emit('<%= commandType %>Attempted', attemptedEvent));
 
         console.log(`[<%= commandType %>Handler] Command attempted and queued for processing: ${command.streamId}`);
     };

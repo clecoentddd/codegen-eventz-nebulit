@@ -27,14 +27,6 @@ export default function <%- sliceName %>Page() {
                             <Badge>Readmodels</Badge>
                         </div>
                     </div>
-                    <Card className="bg-white/80">
-                        <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Tips</h2>
-                        <ul className="mt-4 space-y-2 text-sm text-slate-600">
-                            <li>Utilisez des IDs realistes pour activer les projections.</li>
-                            <li>Chaque commande genere un evenement Attempted.</li>
-                            <li>Les routes API vivent dans <code className="font-semibold text-slate-700">pages/api</code>.</li>
-                        </ul>
-                    </Card>
                 </header>
                 <section className="mt-10 grid gap-6">
                     <%- commandUIs %>

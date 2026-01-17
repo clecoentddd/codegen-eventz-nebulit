@@ -41,6 +41,12 @@ export class <%- readmodelName %>Processor {
             await this.processPendingTodos();
         });
 
+        // Subscribe to completion event to refresh projection
+        signalMock.subscribe('<%- outboundAttemptedEventName %>', async (event: any) => {
+            console.log(`[Processor] Received completion event: ${event.type}`);
+            await this.processPendingTodos();
+        });
+
         // Initial processing on startup
         await this.processPendingTodos();
     }
